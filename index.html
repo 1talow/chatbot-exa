@@ -1,100 +1,191 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Especialista</title>
+    <title>ChatBot | Exa Engenharia</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f4f4f9;
         }
-        #chat {
-            width: 90%;
-            max-width: 500px;
+
+        #chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #0078d7;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+            font-size: 24px;
+        }
+
+        #chat-widget:hover {
+            animation: none;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        #chat-box {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 280px;
+            height: 350px;
+            background-color: white;
             border: 1px solid #ccc;
             border-radius: 10px;
-            padding: 15px;
-            background: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .message {
-            margin: 10px 0;
+
+        #chat-box-header {
+            background-color: #0078d7;
+            color: white;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            font-weight: bold;
         }
-        .user {
-            text-align: right;
-            color: black;
-        }
-        .bot {
-            text-align: left;
-            color: rgb(0, 0, 0);
-        }
-        #input-area {
-            display: flex;
-            margin-top: 10px;
-        }
-        #input-area input {
+
+        #chat-box-messages {
             flex: 1;
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            overflow-y: auto;
         }
-        #input-area button {
+
+        #chat-box-messages div {
+            margin-bottom: 10px;
+        }
+
+        .user {
+            font-weight: bold;
+            color: #0078d7;
+        }
+
+        .chatbot {
+            font-weight: bold;
+            color: #ff6f00;
+        }
+
+        #chat-box-input {
+            display: flex;
+            border-top: 1px solid #ccc;
+        }
+
+        #chat-box-input input {
+            flex: 1;
             padding: 10px;
             border: none;
-            background: #1d65ff;
+            border-radius: 0 0 0 10px;
+        }
+
+        #chat-box-input button {
+            padding: 10px;
+            background-color: #0078d7;
             color: white;
-            border-radius: 5px;
+            border: none;
+            border-radius: 0 0 10px 0;
             cursor: pointer;
+        }
+
+        #chat-box-input button:hover {
+            background-color: #005bb5;
         }
     </style>
 </head>
+
 <body>
-    <div id="chat">
-        
-        <div id="messages"></div>
-        <div id="input-area">
-            <input type="text" id="user-input" placeholder="Digite sua pergunta...">
-            <button onclick="sendMessage()">Enviar</button>
+    <div id="chat-widget">💬</div>
+    <div id="chat-box">
+        <div id="chat-box-header">🤖 ChatBot | Exa Engenharia</div>
+        <div id="chat-box-messages"></div>
+        <div id="chat-box-input">
+            <input type="text" id="chat-input" placeholder="Digite sua mensagem...">
+            <button id="send-button">Enviar</button>
         </div>
     </div>
 
     <script>
-        async function sendMessage() {
-            const userInput = document.getElementById('user-input').value;
-            const messagesDiv = document.getElementById('messages');
+        const chatWidget = document.getElementById('chat-widget');
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const chatMessages = document.getElementById('chat-box-messages');
 
-            // Exibe a mensagem do usuário
-            const userMessage = document.createElement('div');
-            userMessage.className = 'message user';
-            userMessage.textContent = userInput;
-            messagesDiv.appendChild(userMessage);
+        // Toggle chat box visibility
+        chatWidget.addEventListener('click', () => {
+            const isChatBoxVisible = chatBox.style.display === 'flex';
+            chatBox.style.display = isChatBoxVisible ? 'none' : 'flex';
+        });
 
-            // Envia a mensagem para o backend
-            const response = await fetch('http://localhost:3000/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensagem: userInput })
-            });
+        // Close chat box when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!chatBox.contains(event.target) && !chatWidget.contains(event.target)) {
+                chatBox.style.display = 'none';
+            }
+        });
 
-            const data = await response.json();
+        // Send message on button click or Enter key press
+        const sendMessage = async () => {
+            const message = chatInput.value;
+            if (message.trim() !== '') {
+                // Display user's message
+                const userMessage = document.createElement('div');
+                userMessage.innerHTML = `<span class="user">Você:</span> ${message}`;
+                chatMessages.appendChild(userMessage);
 
-            // Exibe a resposta do bot
-            const botMessage = document.createElement('div');
-            botMessage.className = 'message bot';
-            botMessage.textContent = data.resposta;
-            messagesDiv.appendChild(botMessage);
+                chatInput.value = '';
 
-            // Limpa o campo de entrada
-            document.getElementById('user-input').value = '';
-        }
+                // Simulate chatbot response
+                try {
+                    const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ mensagem: message }),
+                    });
+
+                    const data = await response.json();
+                    const botMessage = document.createElement('div');
+                    botMessage.innerHTML = `<span class="chatbot">ChatBot:</span> ${data.resposta}`;
+                    chatMessages.appendChild(botMessage);
+                } catch (error) {
+                    const errorMessage = document.createElement('div');
+                    errorMessage.innerHTML = `<span class="chatbot">ChatBot:</span> Não consegui responder agora, tente mais tarde.`;
+                    chatMessages.appendChild(errorMessage);
+                }
+
+                // Scroll to the latest message
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        };
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
+
 </html>
