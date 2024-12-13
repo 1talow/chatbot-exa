@@ -108,6 +108,16 @@ Lembre-se sempre de ser criativo, profissional e avaliar o contexto para oferece
 });
 
 
+// Rota raiz para verificar funcionamento básico
+app.get('/', (req, res) => {
+    res.send('Bem-vindo ao Chatbot da Exa Engenharia!');
+});
+
+// Middleware para capturar erros
+app.use((err, req, res, next) => {
+    console.error('Erro capturado:', err);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+});
 
 // Inicia o servidor
 app.listen(PORT, () => {
