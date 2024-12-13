@@ -17,7 +17,7 @@ app.use(express.json());
 let insistencias = 0;
 
 // Rota para processar mensagens
-app.post('/chat', async (req, res) => {
+app.post('/chatbot', async (req, res) => {
     const mensagem = req.body.mensagem;
     const apiKey = process.env.OPENAI_API_KEY;
 
