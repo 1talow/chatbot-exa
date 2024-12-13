@@ -24,6 +24,12 @@
             cursor: pointer;
             animation: bounce 2s infinite;
             font-size: 24px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #chat-widget.hidden {
+            opacity: 0;
+            transform: scale(0);
         }
 
         #chat-widget:hover {
@@ -54,6 +60,15 @@
             display: none;
             flex-direction: column;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #chat-box.visible {
+            display: flex;
+            opacity: 1;
+            transform: scale(1);
         }
 
         #chat-box-header {
@@ -132,14 +147,21 @@
 
         // Toggle chat box visibility
         chatWidget.addEventListener('click', () => {
-            const isChatBoxVisible = chatBox.style.display === 'flex';
-            chatBox.style.display = isChatBoxVisible ? 'none' : 'flex';
+            const isChatBoxVisible = chatBox.classList.contains('visible');
+            if (isChatBoxVisible) {
+                chatBox.classList.remove('visible');
+                setTimeout(() => chatWidget.classList.remove('hidden'), 300);
+            } else {
+                chatWidget.classList.add('hidden');
+                setTimeout(() => chatBox.classList.add('visible'), 300);
+            }
         });
 
         // Close chat box when clicking outside
         document.addEventListener('click', (event) => {
             if (!chatBox.contains(event.target) && !chatWidget.contains(event.target)) {
-                chatBox.style.display = 'none';
+                chatBox.classList.remove('visible');
+                setTimeout(() => chatWidget.classList.remove('hidden'), 300);
             }
         });
 
