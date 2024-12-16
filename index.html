@@ -28,8 +28,7 @@
         }
 
         #chat-widget.hidden {
-            opacity: 0;
-            transform: scale(0);
+            display: none;
         }
 
         #chat-widget:hover {
@@ -46,6 +45,22 @@
             60% {
                 transform: translateY(-5px);
             }
+        }
+
+        #chat-widget-notification {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
         }
 
         #chat-box {
@@ -84,6 +99,7 @@
             flex: 1;
             padding: 10px;
             overflow-y: auto;
+            position: relative;
         }
 
         #chat-box-messages div {
@@ -98,6 +114,16 @@
         .chatbot {
             font-weight: bold;
             color: #ff6f00;
+        }
+
+        .chatbot-message {
+            color: black;
+            font-weight: normal;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: #777;
         }
 
         #chat-box-input {
@@ -128,7 +154,10 @@
 </head>
 
 <body>
-    <div id="chat-widget">💬</div>
+    <div id="chat-widget">
+        💬
+        <div id="chat-widget-notification">1</div>
+    </div>
     <div id="chat-box">
         <div id="chat-box-header">🤖 ChatBot | Exa Engenharia</div>
         <div id="chat-box-messages"></div>
@@ -144,68 +173,136 @@
         const chatInput = document.getElementById('chat-input');
         const sendButton = document.getElementById('send-button');
         const chatMessages = document.getElementById('chat-box-messages');
+        const notification = document.getElementById('chat-widget-notification');
 
-        // Toggle chat box visibility
+        let responsePending = false;
+        let mensagemInicialExibida = false;
+        let userScrolling = false;
+
+        // Detecta interação do usuário com o scroll
+        chatMessages.addEventListener('scroll', () => {
+            const isAtBottom =
+                chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 20;
+
+            // Se o usuário não estiver no final, assume que está interagindo manualmente
+            userScrolling = !isAtBottom;
+        });
+
+        // Alterna entre balão e chat
         chatWidget.addEventListener('click', () => {
-            const isChatBoxVisible = chatBox.classList.contains('visible');
-            if (isChatBoxVisible) {
-                chatBox.classList.remove('visible');
-                setTimeout(() => chatWidget.classList.remove('hidden'), 300);
-            } else {
+            if (!chatBox.classList.contains('visible')) {
+                chatBox.classList.add('visible');
                 chatWidget.classList.add('hidden');
-                setTimeout(() => chatBox.classList.add('visible'), 300);
+
+                // Exibe a mensagem inicial apenas na primeira vez
+                if (!mensagemInicialExibida) {
+                    renderizarMensagem(
+                        "Olá! Posso ajudar com suporte técnico, dúvidas sobre serviços ou informações gerais.",
+                        "chatbot"
+                    );
+                    mensagemInicialExibida = true;
+                }
+
+                // Remove a notificação, se houver
+                notification.style.display = "none";
             }
         });
 
-        // Close chat box when clicking outside
+        // Fecha o chat clicando fora
         document.addEventListener('click', (event) => {
             if (!chatBox.contains(event.target) && !chatWidget.contains(event.target)) {
                 chatBox.classList.remove('visible');
-                setTimeout(() => chatWidget.classList.remove('hidden'), 300);
+                chatWidget.classList.remove('hidden');
+
+                // Adiciona notificação se houver resposta pendente
+                if (responsePending) {
+                    notification.style.display = "flex";
+                }
             }
         });
 
-        // Send message on button click or Enter key press
+        // Função para converter markdown para HTML
+        const processarMarkdown = (texto) => {
+            return texto.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+        };
+
+        // Renderiza mensagens no chat
+        const renderizarMensagem = (texto, tipo) => {
+            const mensagem = document.createElement('div');
+            mensagem.innerHTML = `<span class="${tipo}">${tipo === "user" ? "Você" : "ChatBot"}:</span> <span class="${
+                tipo === "chatbot" ? "chatbot-message" : ""
+            }">${processarMarkdown(texto)}</span>`;
+            chatMessages.appendChild(mensagem);
+
+            // Faz o scroll automático, caso o usuário não esteja interagindo
+            if (!userScrolling) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        };
+
+        // Exibe texto caractere por caractere
+        const renderizarTextoGradual = (texto) => {
+            return new Promise((resolve) => {
+                const mensagemContainer = document.createElement('div');
+                mensagemContainer.innerHTML = `<span class="chatbot">ChatBot:</span> <span class="chatbot-message"></span>`;
+                const mensagemTexto = mensagemContainer.querySelector('.chatbot-message');
+                chatMessages.appendChild(mensagemContainer);
+
+                let index = 0;
+                const interval = setInterval(() => {
+                    mensagemTexto.innerHTML = processarMarkdown(texto.slice(0, index + 1));
+                    index++;
+
+                    // Faz o scroll automático, caso o usuário não esteja interagindo
+                    if (!userScrolling) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+
+                    if (index === texto.length) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 25); // Velocidade de digitação ajustada para 25ms
+            });
+        };
+
+        // Envia mensagens para o backend e exibe resposta gradual
         const sendMessage = async () => {
-            const message = chatInput.value;
-            if (message.trim() !== '') {
-                // Display user's message
-                const userMessage = document.createElement('div');
-                userMessage.innerHTML = `<span class="user">Você:</span> ${message}`;
-                chatMessages.appendChild(userMessage);
-
+            const message = chatInput.value.trim();
+            if (message) {
+                renderizarMensagem(message, "user");
                 chatInput.value = '';
+                responsePending = true;
 
-                // Simulate chatbot response
+                // Indicador de digitação
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator';
+                typingIndicator.textContent = 'ChatBot está digitando...';
+                chatMessages.appendChild(typingIndicator);
+
                 try {
                     const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ mensagem: message }),
                     });
-
                     const data = await response.json();
-                    const botMessage = document.createElement('div');
-                    botMessage.innerHTML = `<span class="chatbot">ChatBot:</span> ${data.resposta}`;
-                    chatMessages.appendChild(botMessage);
-                } catch (error) {
-                    const errorMessage = document.createElement('div');
-                    errorMessage.innerHTML = `<span class="chatbot">ChatBot:</span> Não consegui responder agora, tente mais tarde.`;
-                    chatMessages.appendChild(errorMessage);
+
+                    // Remove indicador e renderiza resposta gradual
+                    chatMessages.removeChild(typingIndicator);
+                    await renderizarTextoGradual(data.resposta);
+                } catch {
+                    chatMessages.removeChild(typingIndicator);
+                    renderizarMensagem("Desculpe, não consegui responder agora. Tente novamente mais tarde.", "chatbot");
                 }
 
-                // Scroll to the latest message
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                responsePending = false;
             }
         };
 
         sendButton.addEventListener('click', sendMessage);
         chatInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
+            if (event.key === 'Enter') sendMessage();
         });
     </script>
 </body>
