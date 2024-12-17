@@ -9,7 +9,7 @@
         body {
             font-family: Arial, sans-serif;
         }
-
+        
         #chat-widget {
             position: fixed;
             bottom: 20px;
@@ -150,7 +150,37 @@
         #chat-box-input button:hover {
             background-color: #005bb5;
         }
-    </style>
+
+         /* Animação de digitação (três pontinhos) */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 30px;
+    }
+
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        margin: 0 3px;
+        background-color: #0078d7;
+        border-radius: 50%;
+        display: inline-block;
+        animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .typing-indicator span:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .typing-indicator span:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+        animation-delay: 0;
+    }
+</style>
 </head>
 
 <body>
@@ -307,8 +337,9 @@
             // Indicador de digitação
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'typing-indicator';
-            typingIndicator.textContent = 'ExaBot está digitando...';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>'; // Três pontinhos animados
             chatMessages.appendChild(typingIndicator);
+
 
             try {
                 const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
