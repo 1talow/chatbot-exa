@@ -181,6 +181,54 @@
         animation-delay: 0;
     }
 
+    /* Balão de pensamento */
+#thought-bubble {
+    position: fixed;
+    bottom: 90px;
+    right: 25px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px 15px;
+    max-width: 250px;
+    font-size: 14px;
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+#thought-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    right: 15px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+#thought-bubble-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
 </style>
 </head>
 
@@ -189,6 +237,11 @@
         💬
         <div id="chat-widget-notification">1</div>
     </div>
+    <div id="thought-bubble">
+        <button id="thought-bubble-close">&times;</button>
+        <p>ExaBot: Olá!, sou o assistente virtual da Exa engenharia. Posso te ajudar com dúvidas sobre serviços ou informações gerais. 🤖</p>
+    </div>
+    
     <div id="chat-box">
         <div id="chat-box-header">Assistant Exa Engenharia</div>
         <div id="chat-box-messages"></div>
@@ -372,12 +425,25 @@ chatMessages.addEventListener('scroll', () => {
     }
 };
 
-
-
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') sendMessage();
     });
+
+    // Balão de pensamento temporário
+const thoughtBubble = document.getElementById('thought-bubble');
+const thoughtBubbleClose = document.getElementById('thought-bubble-close');
+
+// Mostra o balão após 3 segundos
+setTimeout(() => {
+    thoughtBubble.style.display = 'block';
+}, 3000);
+
+// Fecha o balão ao clicar no "X"
+thoughtBubbleClose.addEventListener('click', () => {
+    thoughtBubble.style.display = 'none';
+});
+
 </script>
 </body>
 
