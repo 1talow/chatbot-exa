@@ -281,6 +281,9 @@ chatMessages.addEventListener('scroll', () => {
                 chatBox.classList.add('visible');
                 chatWidget.classList.add('hidden');
 
+                thoughtBubble.style.display = 'none'; // Fecha o balão quando o chat é aberto
+
+
                 chatInput.blur(); // Remove o foco do campo de input
 
                 // Exibe a mensagem inicial apenas na primeira vez
