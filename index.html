@@ -180,6 +180,45 @@
     .typing-indicator span:nth-child(3) {
         animation-delay: 0;
     }
+
+    /* Animação de carregamento (spinner) */
+.spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.spinner div {
+    width: 12px;
+    height: 12px;
+    margin: 0 5px;
+    background-color: #0078d7;
+    border-radius: 50%;
+    animation: spinner-bounce 1.4s infinite ease-in-out;
+}
+
+.spinner div:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.spinner div:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.spinner div:nth-child(3) {
+    animation-delay: 0;
+}
+
+@keyframes spinner-bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
 </style>
 </head>
 
@@ -199,24 +238,38 @@
 
     <script>
         const chatWidget = document.getElementById('chat-widget');
-        const chatBox = document.getElementById('chat-box');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
-        const chatMessages = document.getElementById('chat-box-messages');
-        const notification = document.getElementById('chat-widget-notification');
+const chatBox = document.getElementById('chat-box');
+const chatInput = document.getElementById('chat-input');
+const sendButton = document.getElementById('send-button');
+const chatMessages = document.getElementById('chat-box-messages');
+const notification = document.getElementById('chat-widget-notification');
 
-        let responsePending = false;
-        let mensagemInicialExibida = false;
-        let userScrolling = false;
+let responsePending = false;
+let mensagemInicialExibida = false;
+let userScrolling = false;
 
-        // Detecta interação do usuário com o scroll
-        chatMessages.addEventListener('scroll', () => {
-            const isAtBottom =
-                chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 20;
+// Adiciona o spinner ao chat
+const showLoadingSpinner = () => {
+    const spinner = document.createElement('div'); // Cria o spinner
+    spinner.className = 'spinner'; // Adiciona a classe CSS
+    spinner.innerHTML = '<div></div><div></div><div></div>'; // Estrutura das bolinhas
+    chatMessages.appendChild(spinner); // Adiciona ao chat
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Faz scroll automático
 
-            // Se o usuário não estiver no final, assume que está interagindo manualmente
-            userScrolling = !isAtBottom;
-        });
+    return spinner; // Retorna o spinner
+};
+
+// Detecta interação do usuário com o scroll
+chatMessages.addEventListener('scroll', () => {
+    const isAtBottom =
+        chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 20;
+
+    // Se o usuário não estiver no final, assume que está interagindo manualmente
+    userScrolling = !isAtBottom;
+});
+
+// Restante do seu script (sendMessage, renderizarMensagem, etc.)...
+
 
         // Alterna entre balão e chat
         chatWidget.addEventListener('click', () => {
@@ -328,38 +381,51 @@
 
     // Envia mensagens para o backend e exibe resposta gradual
     const sendMessage = async () => {
-        const message = chatInput.value.trim();
-        if (message) {
-            renderizarMensagem(message, "user"); // Renderiza mensagem do usuário sem emojis
-            chatInput.value = '';
-            responsePending = true;
+    const message = chatInput.value.trim();
+    if (message) {
+        renderizarMensagem(message, "user"); // Renderiza a mensagem do usuário
+        chatInput.value = '';
+        responsePending = true;
 
-            // Indicador de digitação
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'typing-indicator';
-            typingIndicator.innerHTML = '<span></span><span></span><span></span>'; // Três pontinhos animados
-            chatMessages.appendChild(typingIndicator);
+        // Indicador de digitação (3 bolinhas)
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+        chatMessages.appendChild(typingIndicator);
 
+        // Spinner de carregamento
+        const spinner = showLoadingSpinner();
 
-            try {
-                const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mensagem: message }),
-                });
-                const data = await response.json();
+        try {
+            const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mensagem: message }),
+            });
+            const data = await response.json();
 
-                // Remove indicador e renderiza resposta gradual
-                chatMessages.removeChild(typingIndicator);
-                await renderizarTextoGradual(data.resposta);
-            } catch {
-                chatMessages.removeChild(typingIndicator);
-                renderizarMensagem("Desculpe, não consegui responder agora. Tente novamente mais tarde.", "ExaBot");
-            }
+            // Remove indicadores de carregamento
+            chatMessages.removeChild(typingIndicator);
+            chatMessages.removeChild(spinner);
 
-            responsePending = false;
+            // Renderiza a resposta do ExaBot
+            await renderizarTextoGradual(data.resposta);
+        } catch {
+            // Remove os indicadores de carregamento
+            chatMessages.removeChild(typingIndicator);
+            chatMessages.removeChild(spinner);
+
+            // Renderiza uma mensagem amigável para o usuário
+            renderizarMensagem(
+                "Estou com dificuldades para acessar as informações. Por favor, aguarde alguns instantes e tente novamente! 😊",
+                "ExaBot"
+            );
         }
-    };
+
+        responsePending = false;
+    }
+};
+
 
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (event) => {
