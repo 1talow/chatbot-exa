@@ -93,6 +93,8 @@
             border-radius: 10px 10px 0 0;
             text-align: center;
             font-weight: bold;
+            font-size: 18px; /* Aumenta o tamanho do título, se quiser */
+            text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor do texto */
         }
 
         #chat-box-messages {
@@ -136,6 +138,7 @@
             padding: 10px;
             border: none;
             border-radius: 0 0 0 10px;
+            font-size: 15px; /* Aumenta o tamanho da fonte */
         }
 
         #chat-box-input button {
@@ -144,11 +147,15 @@
             color: white;
             border: none;
             border-radius: 0 0 10px 0;
+            font-size: 14px; /* Aumenta o tamanho da fonte */
             cursor: pointer;
+            font-weight: bold; /* Deixa o texto do botão em negrito */
+            text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor do texto */
         }
 
         #chat-box-input button:hover {
             background-color: #005bb5;
+            border-color: #003366; /* Altera a cor da borda ao passar o mouse, se quiser */
         }
 
          /* Animação de digitação (três pontinhos) */
@@ -228,6 +235,23 @@
     }
 }
 
+.question-btn {
+        background-color: #0078d7;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 5px;
+        cursor: pointer;
+        text-align: left;
+        font-size: 14px; /* Aumenta o tamanho da letra */
+    font-weight: bold; /* Deixa o texto em negrito */
+    text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor das letras */
+    }
+
+    .question-btn:hover {
+        background-color: #005bb5;
+    }
 
 </style>
 </head>
@@ -239,17 +263,24 @@
     </div>
     <div id="thought-bubble">
         <button id="thought-bubble-close">&times;</button>
-        <p>Olá!, sou o assistente virtual da Exa engenharia. Posso te ajudar com dúvidas sobre serviços ou informações gerais. 🤖</p>
+        <p>Olá! Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais. Escolha uma pergunta abaixo ou digite a sua! 🤖</p>
     </div>
     
     <div id="chat-box">
-        <div id="chat-box-header">Assistant Exa Engenharia</div>
-        <div id="chat-box-messages"></div>
+        <div id="chat-box-header">Exa Assistant</div>
+        <div id="chat-box-messages">
+            <div id="predefined-questions" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                <button class="question-btn" data-question="Quais serviços a Exa oferece?">Quais serviços a Exa oferece?</button>
+                <button class="question-btn" data-question="Posso saber mais sobre o portfólio da Exa?">Posso saber mais sobre o portfólio da Exa?</button>
+                <button class="question-btn" data-question="Como faço para contratar um serviço?">Como faço para contratar um serviço?</button>
+            </div>
+        </div>
         <div id="chat-box-input">
-            <input type="text" id="chat-input" placeholder="Digite sua mensagem...">
+            <input type="text" id="chat-input" placeholder="Digite sua pergunta...">
             <button id="send-button">Enviar</button>
         </div>
     </div>
+    
 
     <script>
         const chatWidget = document.getElementById('chat-widget');
@@ -285,15 +316,6 @@ chatMessages.addEventListener('scroll', () => {
 
 
                 chatInput.blur(); // Remove o foco do campo de input
-
-                // Exibe a mensagem inicial apenas na primeira vez
-                if (!mensagemInicialExibida) {
-                    renderizarMensagem(
-                        "Olá!, sou o assistente virtual da Exa engenharia. Posso te ajudar com dúvidas sobre serviços ou informações gerais.🤖",
-                        "ExaBot"
-                    );
-                    mensagemInicialExibida = true;
-                }
 
                 // Remove a notificação, se houver
                 notification.style.display = "none";
@@ -437,14 +459,34 @@ chatMessages.addEventListener('scroll', () => {
 const thoughtBubble = document.getElementById('thought-bubble');
 const thoughtBubbleClose = document.getElementById('thought-bubble-close');
 
-// Mostra o balão após 3 segundos
+// Mostra o balão após 3 segundos, apenas se o chat não estiver aberto
 setTimeout(() => {
-    thoughtBubble.style.display = 'block';
+    if (!chatBox.classList.contains('visible')) { // Verifica se o chat está fechado
+        thoughtBubble.style.display = 'block';
+    }
 }, 3000);
 
 // Fecha o balão ao clicar no "X"
 thoughtBubbleClose.addEventListener('click', () => {
     thoughtBubble.style.display = 'none';
+});
+
+// Também fecha o balão ao abrir o chat
+chatWidget.addEventListener('click', () => {
+    thoughtBubble.style.display = 'none';
+});
+
+
+// Faz os botões das perguntas pré-prontas funcionarem
+const questionButtons = document.querySelectorAll('.question-btn');
+
+// Adiciona evento de clique a cada botão
+questionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const question = button.getAttribute('data-question'); // Obtém a pergunta do atributo data-question
+        chatInput.value = question; // Preenche o campo de input com a pergunta
+        sendMessage(); // Envia a mensagem como se fosse digitada pelo usuário
+    });
 });
 
 </script>
