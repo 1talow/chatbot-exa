@@ -188,6 +188,12 @@
         animation-delay: 0;
     }
 
+    .hidden {
+    opacity: 0; /* Elemento invisível inicialmente */
+    visibility: hidden;
+    transition: opacity 0.2s ease-in; /* Suaviza a exibição */
+}
+
     /* Balão de pensamento */
 #thought-bubble {
     position: fixed;
@@ -233,6 +239,7 @@
         opacity: 1;
         transform: translateY(0);
     }
+    
 }
 
 .question-btn {
@@ -256,6 +263,60 @@
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Sombra mais intensa no hover */
     }
 
+    @media (max-width: 768px) {
+    #chat-box {
+        width: 90%; /* Ajusta para ocupar 90% da largura da tela */
+        bottom: 20px; /* Aproxima do fundo */
+        right: 5%; /* Centraliza horizontalmente */
+        height: 60%; /* Reduz a altura */
+    }
+
+    #chat-widget {
+        bottom: 10px; /* Aproxima mais do fundo */
+        right: 10px; /* Ajusta a posição lateral */
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    #thought-bubble {
+        bottom: 70px; /* Ajusta a posição para telas menores */
+        right: 10px;
+        max-width: 200px; /* Reduz o tamanho do balão */
+        font-size: 12px;
+    }
+
+    #chat-box-header {
+        font-size: 16px; /* Reduz o tamanho do título */
+    }
+
+    .question-btn {
+        font-size: 14px; /* Reduz o tamanho do texto nos botões */
+        padding: 10px; /* Ajusta o espaçamento interno */
+    }
+}
+
+@media (max-width: 480px) {
+    #chat-box {
+        height: 50%; /* Reduz ainda mais a altura em telas muito pequenas */
+    }
+
+    #chat-widget {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    #thought-bubble {
+        font-size: 10px; /* Reduz o texto do balão */
+    }
+
+    .question-btn {
+        font-size: 12px; /* Ajusta o texto das perguntas */
+        padding: 8px;
+    }
+}
+
 </style>
 </head>
 
@@ -273,9 +334,9 @@
         <div id="chat-box-header">EXA Assistant</div>
         <div id="chat-box-messages">
             <div id="predefined-questions" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                <button class="question-btn" data-question="Quais serviços a EXA oferece?">Quais serviços a EXA oferece?</button>
-                <button class="question-btn" data-question="Posso saber mais sobre o portfólio da EXA?">Posso saber mais sobre o portfólio da EXA?</button>
-                <button class="question-btn" data-question="Como faço para contratar um serviço?">Como faço para contratar um serviço?</button>
+                <button class="question-btn hidden" data-question="Quais serviços a EXA oferece?">Quais serviços a EXA oferece?</button>
+                <button class="question-btn hidden" data-question="Posso saber mais sobre o portfólio da EXA?">Posso saber mais sobre o portfólio da EXA?</button>
+                <button class="question-btn hidden" data-question="Como faço para contratar um serviço?">Como faço para contratar um serviço?</button>
             </div>
         </div>
         <div id="chat-box-input">
@@ -293,6 +354,7 @@ const sendButton = document.getElementById('send-button');
 const chatMessages = document.getElementById('chat-box-messages');
 const notification = document.getElementById('chat-widget-notification');
 
+let perguntasAnimadas = false; // Controle para evitar redigitação
 let responsePending = false;
 let mensagemInicialExibida = false;
 let userScrolling = false;
@@ -323,6 +385,9 @@ chatMessages.addEventListener('scroll', () => {
                 // Remove a notificação, se houver
                 notification.style.display = "none";
                 chatInput.focus(); // Receberá automaticamente o foco para começar a digitar.
+
+                digitarPerguntas(); // Inicia a animação de digitação das perguntas
+
             }
         });
 
@@ -433,7 +498,7 @@ chatMessages.addEventListener('scroll', () => {
             });
             const data = await response.json();
 
-            // Remove indicador de digitação
+            // Remove indicador de digitação 
             chatMessages.removeChild(typingIndicator);
 
             // Renderiza a resposta do ExaBot
@@ -478,6 +543,39 @@ thoughtBubbleClose.addEventListener('click', () => {
 chatWidget.addEventListener('click', () => {
     thoughtBubble.style.display = 'none';
 });
+
+// Função para animar a digitação das perguntas
+const digitarPerguntas = async () => {
+    if (perguntasAnimadas) return; // Sai da função se já foi executada
+
+    perguntasAnimadas = true; // Marca como animado
+    const perguntas = [
+        "Quais serviços a EXA oferece?",
+        "Posso saber mais sobre o portfólio da EXA?",
+        "Como faço para contratar um serviço?"
+    ];
+
+    for (let index = 0; index < perguntas.length; index++) {
+        const button = questionButtons[index];
+        const texto = perguntas[index];
+        button.classList.remove('hidden'); // Exibe o botão
+        button.textContent = ""; // Limpa o texto atual
+
+        await new Promise((resolve) => {
+            let i = 0;
+            const interval = setInterval(() => {
+                button.textContent += texto[i]; // Adiciona letra por letra
+                i++;
+
+                if (i === texto.length) {
+                    clearInterval(interval); // Para a digitação quando terminar
+                    resolve(); // Prossegue para a próxima pergunta
+                }
+            }, 50); // Velocidade de digitação ajustável
+        });
+    }
+};
+
 
 
 // Faz os botões das perguntas pré-prontas funcionarem
