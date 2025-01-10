@@ -241,14 +241,27 @@
         border: 2px solid #25344f; /* Azul escuro para combinar */;
         border-radius: 5px;
         padding: 10px;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
         cursor: pointer;
         text-align: left;
         font-size: 15px; /* Aumenta o tamanho da letra */
     font-weight: bold; /* Deixa o texto em negrito */
     text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor das letras */
+    position: relative; /* Necessário para a ponta */
     }
 
+    .question-btn::after {
+    content: "";
+    position: absolute;
+    bottom: -10px; /* Ajusta a posição vertical da ponta */
+    left: 20px; /* Ajusta a posição horizontal da ponta */
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 10px 0 10px; /* Triângulo apontando para baixo */
+    border-color: #314b73 transparent transparent transparent; /* Cor do balão e bordas transparentes */
+}
+    
     .question-btn:hover {
         background-color: #005bb5;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Sombra ao passar o mouse */
