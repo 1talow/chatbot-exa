@@ -329,7 +329,7 @@
         <button id="thought-bubble-close">&times;</button>
         <p>Olá! Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais. Escolha uma pergunta abaixo ou digite a sua! 🤖</p>
     </div>
-    
+
     <div id="chat-box">
         <div id="chat-box-header">EXA Assistant</div>
         <div id="chat-box-messages">
@@ -345,49 +345,50 @@
         </div>
     </div>
     
-
     <script>
         const chatWidget = document.getElementById('chat-widget');
-const chatBox = document.getElementById('chat-box');
-const chatInput = document.getElementById('chat-input');
-const sendButton = document.getElementById('send-button');
-const chatMessages = document.getElementById('chat-box-messages');
-const notification = document.getElementById('chat-widget-notification');
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const chatMessages = document.getElementById('chat-box-messages');
+        const notification = document.getElementById('chat-widget-notification');
+        const thoughtBubble = document.getElementById('thought-bubble');
+        const thoughtBubbleClose = document.getElementById('thought-bubble-close');
 
-let perguntasAnimadas = false; // Controle para evitar redigitação
-let responsePending = false;
-let mensagemInicialExibida = false;
-let userScrolling = false;
+        let perguntasAnimadas = false;
+        let responsePending = false;
+        let mensagemInicialExibida = false;
+        let userScrolling = false;
 
-// Detecta interação do usuário com o scroll
-chatMessages.addEventListener('scroll', () => {
-    const isAtBottom =
-        chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 20;
+        // Acionamento automático ao carregar a página
+        const pingServer = async () => {
+            try {
+                await fetch('https://chatbot-exa.onrender.com/chatbot');
+                console.log('Servidor ativado automaticamente.');
+            } catch (error) {
+                console.error('Erro ao acionar o servidor:', error);
+            }
+        };
 
-    // Se o usuário não estiver no final, assume que está interagindo manualmente
-    userScrolling = !isAtBottom;
-});
-
-// Restante do seu script (sendMessage, renderizarMensagem, etc.)...
-
+        // Chama o servidor ao carregar a página (para a notificação do ExaBot)
+        window.addEventListener('load', pingServer);
 
         // Alterna entre balão e chat
-        chatWidget.addEventListener('click', () => {
+        chatWidget.addEventListener('click', async () => {
             if (!chatBox.classList.contains('visible')) {
                 chatBox.classList.add('visible');
                 chatWidget.classList.add('hidden');
 
-                thoughtBubble.style.display = 'none'; // Fecha o balão quando o chat é aberto
+                thoughtBubble.style.display = 'none';
 
-
-                chatInput.blur(); // Remove o foco do campo de input
-
-                // Remove a notificação, se houver
+                chatInput.blur();
                 notification.style.display = "none";
-                chatInput.focus(); // Receberá automaticamente o foco para começar a digitar.
+                chatInput.focus();
 
                 digitarPerguntas(); // Inicia a animação de digitação das perguntas
 
+                // Backup: acionar o servidor ao clicar no balão, caso ainda não tenha sido feito
+                await pingServer();
             }
         });
 
@@ -397,7 +398,6 @@ chatMessages.addEventListener('scroll', () => {
                 chatBox.classList.remove('visible');
                 chatWidget.classList.remove('hidden');
 
-                // Adiciona notificação se houver resposta pendente
                 if (responsePending) {
                     notification.style.display = "flex";
                 }
@@ -518,26 +518,22 @@ chatMessages.addEventListener('scroll', () => {
     }
 };
 
-    sendButton.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') sendMessage();
-    });
+sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') sendMessage();
+        });
 
-    // Balão de pensamento temporário
-const thoughtBubble = document.getElementById('thought-bubble');
-const thoughtBubbleClose = document.getElementById('thought-bubble-close');
+        // Balão de pensamento temporário
+        setTimeout(() => {
+            if (!chatBox.classList.contains('visible')) {
+                thoughtBubble.style.display = 'block';
+            }
+        }, 3000);
 
-// Mostra o balão após 3 segundos, apenas se o chat não estiver aberto
-setTimeout(() => {
-    if (!chatBox.classList.contains('visible')) { // Verifica se o chat está fechado
-        thoughtBubble.style.display = 'block';
-    }
-}, 3000);
+        thoughtBubbleClose.addEventListener('click', () => {
+            thoughtBubble.style.display = 'none';
+        });
 
-// Fecha o balão ao clicar no "X"
-thoughtBubbleClose.addEventListener('click', () => {
-    thoughtBubble.style.display = 'none';
-});
 
 // Também fecha o balão ao abrir o chat
 chatWidget.addEventListener('click', () => {
@@ -581,16 +577,15 @@ const digitarPerguntas = async () => {
 // Faz os botões das perguntas pré-prontas funcionarem
 const questionButtons = document.querySelectorAll('.question-btn');
 
-// Adiciona evento de clique a cada botão
-questionButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const question = button.getAttribute('data-question'); // Obtém a pergunta do atributo data-question
-        chatInput.value = question; // Preenche o campo de input com a pergunta
-        sendMessage(); // Envia a mensagem como se fosse digitada pelo usuário
-    });
-});
+        questionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const question = button.getAttribute('data-question');
+                chatInput.value = question;
+                sendMessage();
+            });
+        });
 
-</script>
+    </script>
 </body>
 
 </html>
