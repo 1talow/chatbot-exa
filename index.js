@@ -5,7 +5,7 @@ import fetch from 'node-fetch'; // Biblioteca para requisições HTTP
 import cors from 'cors'; // Middleware para habilitar CORS
 
 const app = express(); // Cria a aplicação Express
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Habilita o CORS para todas as requisições
 app.use(cors());
