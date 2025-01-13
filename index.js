@@ -153,6 +153,12 @@ app.get('/', (req, res) => {
     res.send('Bem-vindo ao Assistente Virtual da Exa Engenharia!');
 });
 
+// Nova rota para o ping
+app.get('/ping', (req, res) => {
+    console.log('Servidor foi acionado pelo ping do frontend!');
+    res.status(200).send('Servidor ativo!');
+});
+
 // Middleware para capturar erros
 app.use((err, req, res, next) => {
     console.error('Erro capturado:', err);

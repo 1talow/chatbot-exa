@@ -363,7 +363,7 @@
         // Acionamento automático ao carregar a página
         const pingServer = async () => {
             try {
-                await fetch('https://chatbot-exa.onrender.com/chatbot');
+                await fetch('https://chatbot-exa.onrender.com/ping'); // Rota de "ping"
                 console.log('Servidor ativado automaticamente.');
             } catch (error) {
                 console.error('Erro ao acionar o servidor:', error);
