@@ -434,7 +434,7 @@
         });
 
         // Função para adicionar emojis ao lado das palavras-chave nas respostas do ExaBot
-    const adicionarEmojis = (texto) => {
+        const adicionarEmojis = (texto) => {
         const regras = {
             "especialistas": "👨‍💻",
             "trabalhando": "🔄",
@@ -458,7 +458,7 @@
     };
 
     // Processar markdown e emojis (somente para respostas do ExaBot)
-    const processarMarkdown = (texto, tipo) => {
+        const processarMarkdown = (texto, tipo) => {
         if (tipo === "ExaBot") {
             texto = adicionarEmojis(texto); // Adiciona emojis apenas nas respostas do ExaBott
         }
@@ -466,7 +466,7 @@
     };
 
     // Renderiza mensagens no chat
-    const renderizarMensagem = (texto, tipo) => {
+        const renderizarMensagem = (texto, tipo) => {
         const mensagem = document.createElement('div');
         mensagem.innerHTML = `<span class="${tipo}">${tipo === "user" ? "Você" : "ExaBot"}:</span> <span class="${
             tipo === "ExaBot" ? "ExaBot-message" : ""
@@ -480,8 +480,8 @@
     };
 
     // Exibir texto gradual com controle de scroll
-const renderizarTextoGradual = (texto) => {
-    return new Promise((resolve) => {
+        const renderizarTextoGradual = (texto) => {
+        return new Promise((resolve) => {
         const mensagemContainer = document.createElement('div');
         mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
         const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
@@ -505,9 +505,9 @@ const renderizarTextoGradual = (texto) => {
     });
 };
     // Envia mensagens para o backend e exibe resposta gradual
-    const sendMessage = async () => {
-    const message = chatInput.value.trim();
-    if (message) {
+        const sendMessage = async () => {
+        const message = chatInput.value.trim();
+        if (message) {
         renderizarMensagem(message, "user"); // Renderiza a mensagem do usuário
         chatInput.value = '';
         responsePending = true;
