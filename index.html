@@ -376,14 +376,14 @@
         let perguntasAnimadas = false;
         let responsePending = false;
         let mensagemInicialExibida = false;
-        let userScrolling = false;
+        let userScrolling = false; // Variável para controlar o estado do scroll
 
-        // Detecção de scroll manual pelo usuário
+        // Detecção de interação manual com o scroll
         chatMessages.addEventListener('scroll', () => {
         const nearBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 10;
-        userScrolling = !nearBottom; // Se o usuário está no final, scroll automático é permitido
+        userScrolling = !nearBottom; // Se estiver perto do final, o scroll é automático
         });
-
+        
         // Acionamento automático ao carregar a página
         const pingServer = async () => {
             try {
@@ -479,32 +479,31 @@
         }
     };
 
-    // Exibe texto caractere por caractere
-    const renderizarTextoGradual = (texto) => {
-        return new Promise((resolve) => {
-            const mensagemContainer = document.createElement('div');
-            mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
-            const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
-            chatMessages.appendChild(mensagemContainer);
+    // Exibir texto gradual com controle de scroll
+const renderizarTextoGradual = (texto) => {
+    return new Promise((resolve) => {
+        const mensagemContainer = document.createElement('div');
+        mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
+        const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
+        chatMessages.appendChild(mensagemContainer);
 
-            let index = 0;
-            const interval = setInterval(() => {
-                mensagemTexto.innerHTML = processarMarkdown(texto.slice(0, index + 1), "ExaBot");
-                index++;
+        let index = 0;
+        const interval = setInterval(() => {
+            mensagemTexto.innerHTML = processarMarkdown(texto.slice(0, index + 1), "ExaBot");
+            index++;
 
-                // Faz o scroll automático, caso o usuário não esteja interagindo
-                if (!userScrolling) {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
+            // Scroll automático apenas se o usuário não estiver visualizando mensagens antigas
+            if (!userScrolling) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
 
-                if (index === texto.length) {
-                    clearInterval(interval);
-                    resolve();
-                }
-            }, 25); // Velocidade de digitação ajustada para 25ms
-        });
-    };
-
+            if (index === texto.length) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 25); // Velocidade de digitação ajustada para 25ms
+    });
+};
     // Envia mensagens para o backend e exibe resposta gradual
     const sendMessage = async () => {
     const message = chatInput.value.trim();
