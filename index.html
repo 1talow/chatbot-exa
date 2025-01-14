@@ -171,6 +171,25 @@
             text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor do texto */
         }
 
+        #minimize-chat {
+           position: absolute;
+           top: 10px;
+           right: 10px;
+           background-color: transparent;
+           border: none;
+           font-size: 16px;
+           font-weight: bold;
+           color: white;
+           cursor: pointer;
+           outline: none;
+           
+        }
+
+         #minimize-chat:hover {
+           color: #ccc;
+        }
+
+
         #chat-box-input button:hover {
             background-color: #1e3554;
             border-color: #003366; /* Altera a cor da borda ao passar o mouse, se quiser */
@@ -349,7 +368,11 @@
     </div>
 
     <div id="chat-box">
-        <div id="chat-box-header">EXA Assistant</div>
+        <div id="chat-box-header">
+            <span>EXA Assistant</span>
+            <button id="minimize-chat" title="Minimizar Chat">─</button>
+        </div>
+        
         <div id="chat-box-messages">
             <div id="predefined-questions" style="display: flex; flex-direction: column; margin-bottom: 10px;">
                 <button class="question-btn hidden" data-question="Quais serviços a EXA oferece?">Quais serviços a EXA oferece?</button>
@@ -372,11 +395,23 @@
         const notification = document.getElementById('chat-widget-notification');
         const thoughtBubble = document.getElementById('thought-bubble');
         const thoughtBubbleClose = document.getElementById('thought-bubble-close');
+        const minimizeButton = document.getElementById('minimize-chat'); // Botão de minimizar
 
         let perguntasAnimadas = false;
         let responsePending = false;
         let mensagemInicialExibida = false;
         let userScrolling = false; // Variável para controlar o estado do scroll
+
+        // Botão de minimizar, clicando "fora" do site
+        minimizeButton.addEventListener('click', () => {
+       // Simula o clique fora do chat
+        chatBox.classList.remove('visible');
+        chatWidget.classList.remove('hidden');
+
+        if (responsePending) {
+        notification.style.display = "flex";
+         }
+        });
 
         // Detecção de interação manual com o scroll
         chatMessages.addEventListener('scroll', () => {
