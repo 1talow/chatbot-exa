@@ -420,6 +420,11 @@
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Sombra leve e estática */
     }
     
+    #predefined-questions {
+    display: none;
+}
+
+
     .question-btn:hover {
         background-color: #1e3554;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Sombra mais intensa no hover */
@@ -636,10 +641,6 @@
     background-color: var(--button-hover);
 }
 
-
-
-
-
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     </head>
@@ -651,7 +652,7 @@
     </div>
     <div id="thought-bubble">
         <button id="thought-bubble-close">&times;</button>
-        <p>Olá! Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais. Escolha uma pergunta abaixo ou digite a sua! 🤖</p>
+        <p>🤖 Olá! 👋 Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais.</p>
     </div>
 
         <div id="chat-box" class="light-theme">
@@ -682,11 +683,12 @@
         </div>
             
         <div id="chat-box-messages">
-            <div id="predefined-questions" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+            <div id="predefined-questions" style="flex-direction: column; margin-bottom: 10px;">
                 <button class="question-btn hidden" data-question="Quais serviços a EXA oferece?">Quais serviços a EXA oferece?</button>
-                <button class="question-btn hidden" data-question="Posso saber mais sobre o portfólio da EXA?">Posso saber mais sobre o portfólio da EXA?</button>
+                <button class="question-btn hidden" data-question="Qual seria o portfólio da EXA?">Qual seria o portfólio da EXA?</button>
                 <button class="question-btn hidden" data-question="Como faço para contratar um serviço?">Como faço para contratar um serviço?</button>
             </div>
+            
         </div>
         <div id="chat-box-input">
             <input type="text" id="chat-input" placeholder="Digite sua pergunta...">
@@ -709,6 +711,63 @@
         const currentLanguage = document.getElementById('current-language'); // Botão "Automático" 
         const themeToggle = document.getElementById('theme-toggle'); // Referência ao botão de alternância de tema
        
+
+
+
+        
+        const exibirSaudacaoInicial = () => {
+    const saudacaoTexto = "Como posso ajudá-lo hoje? Escolha uma pergunta abaixo ou digite a sua.";
+    const mensagemContainer = document.createElement('div');
+    mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
+    const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
+    const digitarPerguntas = () => {
+    const perguntasContainer = document.getElementById('predefined-questions');
+    perguntasContainer.style.display = "flex"; // Exibe o container
+
+    const perguntas = perguntasContainer.querySelectorAll('.question-btn');
+
+    perguntas.forEach((button, index) => {
+        const texto = button.getAttribute('data-question');
+        button.classList.add('hidden'); // Garante que todas as perguntas comecem ocultas
+
+        // Mostra e anima cada botão após o anterior
+        setTimeout(() => {
+            button.classList.remove('hidden'); // Exibe o botão
+            button.textContent = ""; // Limpa o texto atual para animação
+
+            // Animação de digitação para o texto
+            let i = 0;
+            const interval = setInterval(() => {
+                button.textContent += texto[i];
+                i++;
+
+                if (i === texto.length) {
+                    clearInterval(interval); // Finaliza a digitação
+                }
+            }, 50); // Velocidade ajustável
+        }, index * 1500); // Atraso entre cada botão (ajustável)
+    });
+};
+
+    // Adiciona no topo da área de mensagens
+    chatMessages.insertBefore(mensagemContainer, chatMessages.firstChild);
+
+    let index = 0;
+    const interval = setInterval(() => {
+        mensagemTexto.textContent += saudacaoTexto[index];
+        index++;
+
+        if (index === saudacaoTexto.length) {
+            clearInterval(interval);
+            // Exibe as perguntas apenas após a saudação terminar
+            digitarPerguntas();
+        }
+    }, 50); // Velocidade de digitação ajustável
+};
+
+
+
+        
         // Evento de alternância de tema
 themeToggle.addEventListener('change', () => {
     if (themeToggle.checked) {
@@ -1029,8 +1088,15 @@ function simulateTypingWithBalloon(message) {
 
     // Também fecha o balão ao abrir o chat
     chatWidget.addEventListener('click', () => {
-    thoughtBubble.style.display = 'none';
+    if (!mensagemInicialExibida) {
+        exibirSaudacaoInicial(); // Exibe a saudação
+        mensagemInicialExibida = true; // Garante execução única
+    }
 });
+
+
+
+
 
     // Função para animar a digitação das perguntas
     const digitarPerguntas = async () => {
@@ -1039,7 +1105,7 @@ function simulateTypingWithBalloon(message) {
     perguntasAnimadas = true; // Marca como animado
     const perguntas = [
         "Quais serviços a EXA oferece?",
-        "Posso saber mais sobre o portfólio da EXA?",
+        "Qual seria o portfólio da EXA?",
         "Como faço para contratar um serviço?"
     ];
 
