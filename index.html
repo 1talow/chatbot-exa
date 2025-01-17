@@ -952,18 +952,30 @@ document.addEventListener('click', (event) => {
     const isClickInsideSettingsMenu = settingsMenu.contains(event.target); // Verifica se clicou dentro do menu
     const isClickInsideSettingsGear = settingsGear.contains(event.target); // Verifica se clicou na engrenagem
     const isClickInsideChat = chatBox.contains(event.target); // Verifica se clicou dentro do chat
+    const isClickInsideWidget = chatWidget.contains(event.target); // Verifica se clicou no widget
 
-    if (!isClickInsideSettingsMenu && !isClickInsideSettingsGear && isClickInsideChat) {
-        // Fecha o menu de configurações
-        settingsMenu.style.display = 'none';
+if (!isClickInsideChat && !isClickInsideWidget) {
+    // Fecha o chat
+    chatBox.classList.remove('visible');
+    chatWidget.classList.remove('hidden');
 
-        // Rotaciona a engrenagem para a posição fechada
+    // Fecha o menu de ajustes se estiver aberto
+    if (settingsMenu.style.display === 'block') {
+        settingsMenu.style.display = 'none'; // Fecha os ajustes
+
+        // Garante que a engrenagem volte à posição inicial (fechada)
         if (isRotatedRight) {
             settingsGear.classList.remove('rotate-right');
             settingsGear.classList.add('rotate-left');
-            isRotatedRight = false;
+            isRotatedRight = false; // Atualiza o estado
         }
     }
+
+    // Mostra notificação se houver resposta pendente
+    if (responsePending) {
+        notification.style.display = "flex";
+    }
+}
 });
 
         let perguntasAnimadas = false;
@@ -1040,17 +1052,26 @@ document.addEventListener('click', (event) => {
             }
         });
 
-        // Fecha o chat clicando fora
-        document.addEventListener('click', (event) => {
-            if (!chatBox.contains(event.target) && !chatWidget.contains(event.target)) {
-                chatBox.classList.remove('visible');
-                chatWidget.classList.remove('hidden');
+        // Fecha os ajustes ao clicar fora do menu de configurações, mas ainda dentro do chat
+document.addEventListener('click', (event) => {
+    const isClickInsideSettingsMenu = settingsMenu.contains(event.target); // Verifica se clicou dentro do menu de ajustes
+    const isClickInsideSettingsGear = settingsGear.contains(event.target); // Verifica se clicou na engrenagem
+    const isClickInsideChat = chatBox.contains(event.target); // Verifica se clicou dentro do chat
 
-                if (responsePending) {
-                    notification.style.display = "flex";
-                }
+    if (isClickInsideChat && !isClickInsideSettingsMenu && !isClickInsideSettingsGear) {
+        // Fecha o menu de ajustes se estiver aberto
+        if (settingsMenu.style.display === 'block') {
+            settingsMenu.style.display = 'none'; // Fecha os ajustes
+
+            // Garante que a engrenagem volte à posição inicial (fechada)
+            if (isRotatedRight) {
+                settingsGear.classList.remove('rotate-right');
+                settingsGear.classList.add('rotate-left');
+                isRotatedRight = false; // Atualiza o estado
             }
-        });
+        }
+    }
+});
 
         // Função para adicionar emojis ao lado das palavras-chave nas respostas do ExaBot
         const adicionarEmojis = (texto) => {
