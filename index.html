@@ -234,6 +234,11 @@
            font-family: Arial, sans-serif;
         }
 
+        #settings-menu button {
+    font-size: 1rem; /* Define um tamanho fixo de fonte para os botões de ajustes */
+}
+
+
         #settings-menu h3 {
         margin: 0 0 10px 0;
         font-size: 18px;
@@ -844,6 +849,9 @@ let currentFontSize = 1; // Tamanho padrão
 const updateFontSize = (sizeMultiplier) => {
     currentFontSize = sizeMultiplier;
     chatBox.style.fontSize = `${currentFontSize}rem`;
+
+    // Garante que o menu de configurações não seja impactado
+    settingsMenu.style.fontSize = '1rem'; // Mantém tamanho fixo para o menu
 };
 
 increaseFontBtn.addEventListener('click', () => {
