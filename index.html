@@ -424,7 +424,6 @@
     display: none;
 }
 
-
     .question-btn:hover {
         background-color: #1e3554;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Sombra mais intensa no hover */
@@ -567,6 +566,57 @@
     color: #4caf50; /* Um tom de verde mais claro para melhor contraste */
 }
 
+/* Status no tema claro */
+#chat-box.light-theme #chat-status {
+    background-color: #f1f1f1 !important;
+    border-bottom: 1px solid #ccc !important;
+}
+
+/* Status específico para "online", "processando" e "offline" no tema claro */
+#chat-box.light-theme #chat-status.online {
+    color: #28a745 !important; /* Verde */
+}
+
+#chat-box.light-theme #chat-status.processando {
+    color: #ffa500 !important; /* Amarelo */
+}
+
+#chat-box.light-theme #chat-status.offline {
+    color: #dc3545 !important; /* Vermelho */
+}
+
+/* Status no tema escuro */
+#chat-box.dark-theme #chat-status {
+    background-color: #333 !important;
+    border-bottom: 1px solid #555 !important;
+}
+
+/* Status específico para "online", "processando" e "offline" no tema escuro */
+#chat-box.dark-theme #chat-status.online {
+    color: #4caf50 !important; /* Verde claro */
+}
+
+#chat-box.dark-theme #chat-status.processando {
+    color: #ffc107 !important; /* Amarelo claro */
+}
+
+#chat-box.dark-theme #chat-status.offline {
+    color: #ff6f61 !important; /* Vermelho suave */
+}
+
+/* Tema claro */
+#chat-box.light-theme #chat-status {
+    background-color: #f1f1f1; /* Fundo claro */
+    border-bottom: 1px solid #ccc; /* Borda clara */
+}
+
+/* Tema escuro */
+#chat-box.dark-theme #chat-status {
+    background-color: #333; /* Fundo escuro */
+    border-bottom: 1px solid #555; /* Borda escura */
+}
+
+
 /* Aplicação das variáveis ao ExaBot */
 #chat-box {
     background-color: var(--background-color);
@@ -655,7 +705,7 @@
         <p>🤖 Olá! 👋 Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais.</p>
     </div>
 
-        <div id="chat-box" class="light-theme">
+    <div id="chat-box" class="light-theme">
         <div id="chat-box-header">
             <span>EXA Assistant</span>
             <button id="minimize-chat" title="Minimizar Chat">─</button>
@@ -663,19 +713,23 @@
                 <i class="fas fa-cog"></i>
             </button>
         </div>
+
+          <!-- Indicador de status fixo no topo -->
+            <div id="chat-status" style="text-align: center; font-size: 14px; color: #28a745; padding: 5px 0; background: #f1f1f1; border-bottom: 1px solid #ccc;">Online</div>
         
-        <!-- menu de configurações -->
-        <div id="settings-menu">
+          <!-- menu de configurações -->
+            <div id="settings-menu">
             <h3>Configurações</h3>
             <div class="settings-item">
                 <label for="theme-toggle">Tema Claro/Escuro</label>
                 <input type="checkbox" id="theme-toggle">
             </div>
-        
+            <div id="chat-box-content" style="display: flex; flex-direction: column; height: 100%;"></div>
             <div class="settings-item">
                 <label for="language-select">Idioma</label>
                 <span id="current-language">Automático</span>
             </div>
+
             <div id="language-options" style="display: none; margin-top: 10px;">
                 <button class="language-btn" data-language="en">Inglês</button>
                 <button class="language-btn" data-language="pt">Português</button>
@@ -683,18 +737,20 @@
         </div>
             
         <div id="chat-box-messages">
+            <div id="chat-box-messages" style="flex: 1; overflow-y: auto; padding: 10px;"></div>
             <div id="predefined-questions" style="flex-direction: column; margin-bottom: 10px;">
                 <button class="question-btn hidden" data-question="Quais serviços a EXA oferece?">Quais serviços a EXA oferece?</button>
                 <button class="question-btn hidden" data-question="Qual seria o portfólio da EXA?">Qual seria o portfólio da EXA?</button>
                 <button class="question-btn hidden" data-question="Como faço para contratar um serviço?">Como faço para contratar um serviço?</button>
             </div>
-            
         </div>
-        <div id="chat-box-input">
+            
+        
+        <div id="chat-box-input" style="border-top: 1px solid #ccc;">
             <input type="text" id="chat-input" placeholder="Digite sua pergunta...">
             <button id="send-button">Enviar</button>
         </div>
-    </div>
+    
     
     <script>
         const chatWidget = document.getElementById('chat-widget');
@@ -710,11 +766,34 @@
         const settingsGear = document.getElementById('settings-gear');
         const currentLanguage = document.getElementById('current-language'); // Botão "Automático" 
         const themeToggle = document.getElementById('theme-toggle'); // Referência ao botão de alternância de tema
-       
+        const chatStatus = document.getElementById('chat-status'); // Seleciona o elemento do status
+
+    // Função para atualizar o status do chat dinamicamente
+    const atualizarStatus = (status) => {
+    const chatStatus = document.getElementById('chat-status');
+
+    // Remove classes de status antigas
+    chatStatus.classList.remove('online', 'processando', 'offline');
+
+    // Adiciona a classe correspondente ao status
+    chatStatus.classList.add(status);
+
+    // Define o texto do status
+    if (status === 'online') {
+        chatStatus.textContent = 'Online';
+    } else if (status === 'processando') {
+        chatStatus.textContent = 'Processando...';
+    } else if (status === 'offline') {
+        chatStatus.textContent = 'Offline';
+    }
+};
+
+// Atualiza o status ao carregar o chat
+document.addEventListener('DOMContentLoaded', () => {
+    atualizarStatus('online'); // Define como online inicialmente
+});
 
 
-
-        
         const exibirSaudacaoInicial = () => {
     const saudacaoTexto = "Como posso ajudá-lo hoje? Escolha uma pergunta abaixo ou digite a sua.";
     const mensagemContainer = document.createElement('div');
@@ -723,9 +802,12 @@
     const digitarPerguntas = () => {
     const perguntasContainer = document.getElementById('predefined-questions');
     perguntasContainer.style.display = "flex"; // Exibe o container
+    perguntasContainer.style.display = 'flex';
+    perguntasContainer.style.flexDirection = 'column';
+    perguntasContainer.style.marginTop = '-20px'; // Ajuste aqui para subir as perguntas
+    perguntasContainer.style.marginBottom = '10px'; // Mantém espaçamento inferior
 
     const perguntas = perguntasContainer.querySelectorAll('.question-btn');
-
     perguntas.forEach((button, index) => {
         const texto = button.getAttribute('data-question');
         button.classList.add('hidden'); // Garante que todas as perguntas comecem ocultas
@@ -764,21 +846,17 @@
         }
     }, 50); // Velocidade de digitação ajustável
 };
-
-
-
         
-        // Evento de alternância de tema
+        // Atualiza o status ao alternar o tema
 themeToggle.addEventListener('change', () => {
     if (themeToggle.checked) {
         chatBox.classList.add('dark-theme'); // Aplica tema escuro
         chatBox.classList.remove('light-theme'); // Remove tema claro
-        console.log('Tema escuro ativado');
     } else {
         chatBox.classList.add('light-theme'); // Aplica tema claro
         chatBox.classList.remove('dark-theme'); // Remove tema escuro
-        console.log('Tema claro ativado');
     }
+    atualizarStatus(chatStatus.textContent.toLowerCase()); // Atualiza a cor do status com base no tema ativo
 });
         
         // Função para simular digitação
@@ -990,12 +1068,15 @@ function simulateTypingWithBalloon(message) {
     });
     };
     // Envia mensagens para o backend e exibe resposta gradual
-        const sendMessage = async () => {
-        const message = chatInput.value.trim();
-        if (message) {
-        renderizarMensagem(message, "user"); // Renderiza a mensagem do usuário
+    const sendMessage = async () => {
+    const message = chatInput.value.trim();
+
+    if (message) {
+        renderizarMensagem(message, "user"); // Exibe a mensagem do usuário
         chatInput.value = '';
         responsePending = true;
+
+        atualizarStatus('processando'); // Mostra "Processando..." durante o envio
 
         // Indicador de digitação (3 bolinhas)
         const typingIndicator = document.createElement('div');
@@ -1023,6 +1104,10 @@ function simulateTypingWithBalloon(message) {
                 body: JSON.stringify({ mensagem: message }),
             });
 
+            if (!response.ok) {
+                throw new Error('Falha na resposta do servidor');
+            }
+
             const data = await response.json();
 
             // Cancela o timer se a resposta chegar antes de 5 segundos
@@ -1040,8 +1125,11 @@ function simulateTypingWithBalloon(message) {
             }
 
             // Renderiza a resposta do ExaBot
-            await renderizarTextoGradual(data.resposta);
-        } catch {
+            atualizarStatus('online'); // Volta para "Online" após receber resposta
+            await renderizarTextoGradual(data.resposta); // Exibe a resposta do ExaBot
+        } catch (error) {
+            console.error('Erro ao processar mensagem:', error);
+
             // Cancela o timer em caso de erro
             clearTimeout(timer);
 
@@ -1056,18 +1144,13 @@ function simulateTypingWithBalloon(message) {
                 }, 500); // Tempo da animação (0.5s)
             }
 
-            // Renderiza uma mensagem amigável para o usuário
-            renderizarMensagem(
-                "Houve um problema ao processar sua pergunta. Por favor, tente novamente! 😊",
-                "ExaBot"
-            );
+            atualizarStatus('offline'); // Define como "Offline" se houver erro
+            renderizarMensagem('Houve um problema. Tente novamente mais tarde.', 'ExaBot');
         }
 
         responsePending = false;
     }
-    };
-
-
+};
 
     sendButton.addEventListener('click', sendMessage);
         chatInput.addEventListener('keypress', (event) => {
@@ -1093,10 +1176,6 @@ function simulateTypingWithBalloon(message) {
         mensagemInicialExibida = true; // Garante execução única
     }
 });
-
-
-
-
 
     // Função para animar a digitação das perguntas
     const digitarPerguntas = async () => {
@@ -1140,6 +1219,10 @@ function simulateTypingWithBalloon(message) {
                 sendMessage();
             });
         });
+
+        // Simulação para mudar status (personalizável conforme sua lógica)
+        setTimeout(() => atualizarStatus('processando'), 2000); // Após 2 segundos
+        setTimeout(() => atualizarStatus('online'), 5000); // Após 5 segundos
 
     </script>
 </body>
