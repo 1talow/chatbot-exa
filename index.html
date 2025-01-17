@@ -237,7 +237,24 @@
         #settings-menu button {
     padding: 2px 5px; /* Aumenta o tamanho interno dos botões */
     font-size: 0.9rem; /* Ajusta o tamanho da fonte nos botões */
+
+    /* Estilo para os botões menores e juntos */
+#settings-menu .settings-item button {
+    padding: 5px 10px; /* Reduz o tamanho interno dos botões */
+    font-size: 0.8rem; /* Deixa a fonte menor */
+    margin: 0; /* Remove espaçamento externo dos botões */
+    border-radius: 5px; /* Mantém bordas arredondadas */
 }
+}
+
+/* Espaçamento entre nome da configuração e os botões */
+#settings-menu .settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px; /* Espaçamento entre os itens */
+}
+
 
         #settings-menu h3 {
         margin: 0 0 10px 0;
