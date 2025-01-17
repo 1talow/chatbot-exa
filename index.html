@@ -187,19 +187,35 @@
         }
 
         #settings-gear {
-           position: absolute;
-           top: 10px;
-           right: 43px; /* Ajusta a posição ao lado do botão de minimizar */
-           background-color: transparent; /* Remove o fundo branco */
-           border: none; /* Remove qualquer borda */
-           font-size: 20px; /* Aumenta o tamanho da engrenagem */
-           color: white; /* Deixa a engrenagem branca */
-           cursor: pointer;
-           outline: none;
-           padding: 0; /* Remove espaçamento interno desnecessário */
-        }
+    position: absolute;
+    top: 10px;
+    right: 43px; /* Ajusta a posição ao lado do botão de minimizar */
+    background-color: transparent;
+    border: none;
+    font-size: 20px; /* Tamanho da engrenagem */
+    color: white;
+    cursor: pointer;
+    outline: none;
+    padding: 0; /* Remove espaçamento interno */
+    transition: transform 0.3s ease; /* Suaviza a rotação */
+    transform-origin: center center; /* Garante rotação no centro */
+    width: 24px; /* Tamanho fixo para evitar deslocamento */
+    height: 24px; /* Tamanho fixo para evitar deslocamento */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-         #settings-gear:hover {
+#settings-gear.rotate-right {
+    transform: rotate(90deg); /* Gira 90 graus para a direita */
+}
+
+#settings-gear.rotate-left {
+    transform: rotate(-90deg); /* Gira 90 graus para a esquerda */
+}
+
+
+        #settings-gear:hover {
            color: #ccc; /* Cor mais clara no hover */
         }
 
@@ -896,8 +912,8 @@ themeToggle.addEventListener('change', () => {
     chatWidget.classList.add('hidden');
 });
 
-// Função para exibir balão com mensagens combinadas
-function simulateTypingWithBalloon(message) {
+    // Função para exibir balão com mensagens combinadas
+    function simulateTypingWithBalloon(message) {
     const typingIndicator = document.createElement('div');
     typingIndicator.className = 'typing-indicator';
     typingIndicator.innerHTML = `<span></span><span></span><span></span>`;
@@ -915,31 +931,71 @@ function simulateTypingWithBalloon(message) {
     }, 2000); // Tempo para simular a digitação
 }
 
-        settingsGear.addEventListener('click', () => {
-        settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
-        });
+settingsGear.addEventListener('click', () => {
+    settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+    
 
-        document.addEventListener('click', (event) => {
-        if (!settingsGear.contains(event.target) && !settingsMenu.contains(event.target)) {
+    // Alterna entre as classes de rotação
+    if (isRotatedRight) {
+        settingsGear.classList.remove('rotate-right');
+        settingsGear.classList.add('rotate-left');
+    } else {
+        settingsGear.classList.remove('rotate-left');
+        settingsGear.classList.add('rotate-right');
+    }
+
+    isRotatedRight = !isRotatedRight; // Alterna o estado
+});
+
+// Fecha o menu de configurações ao clicar fora
+document.addEventListener('click', (event) => {
+    const isClickInsideSettingsMenu = settingsMenu.contains(event.target); // Verifica se clicou dentro do menu
+    const isClickInsideSettingsGear = settingsGear.contains(event.target); // Verifica se clicou na engrenagem
+    const isClickInsideChat = chatBox.contains(event.target); // Verifica se clicou dentro do chat
+
+    if (!isClickInsideSettingsMenu && !isClickInsideSettingsGear && isClickInsideChat) {
+        // Fecha o menu de configurações
         settingsMenu.style.display = 'none';
+
+        // Rotaciona a engrenagem para a posição fechada
+        if (isRotatedRight) {
+            settingsGear.classList.remove('rotate-right');
+            settingsGear.classList.add('rotate-left');
+            isRotatedRight = false;
         }
-        });
+    }
+});
 
         let perguntasAnimadas = false;
         let responsePending = false;
         let mensagemInicialExibida = false;
         let userScrolling = false; // Variável para controlar o estado do scroll
+        let isRotatedRight = false; // Controle da direção atual
+        
 
         // Botão de minimizar, clicando "fora" do site
-        minimizeButton.addEventListener('click', () => {
-       // Simula o clique fora do chat
-        chatBox.classList.remove('visible');
-        chatWidget.classList.remove('hidden');
+    minimizeButton.addEventListener('click', () => {
+    // Fecha o chat
+    chatBox.classList.remove('visible');
+    chatWidget.classList.remove('hidden');
 
-        if (responsePending) {
+    // Fecha o menu de ajustes se estiver aberto
+    if (settingsMenu.style.display === 'block') {
+        settingsMenu.style.display = 'none'; // Fecha o menu de ajustes
+
+        // Garante que a engrenagem volte para a posição inicial (fechada)
+        if (isRotatedRight) {
+            settingsGear.classList.remove('rotate-right');
+            settingsGear.classList.add('rotate-left');
+            isRotatedRight = false;
+        }
+    }
+
+    // Exibe notificação se houver resposta pendente
+    if (responsePending) {
         notification.style.display = "flex";
-         }
-        });
+    }
+});
 
         // Detecção de interação manual com o scroll
         chatMessages.addEventListener('scroll', () => {
