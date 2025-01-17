@@ -740,6 +740,20 @@
     overscroll-behavior: contain; /* Evita propagação do scroll para fora do elemento */
 }
 
+/* Controle de tamanho de fonte */
+.font-small {
+    font-size: 0.9rem;
+}
+
+.font-medium {
+    font-size: 1rem;
+}
+
+.font-large {
+    font-size: 1.2rem;
+}
+
+
 
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -756,35 +770,36 @@
     </div>
 
     <div id="chat-box" class="light-theme">
-        <div id="chat-box-header">
+        <div id="chat-box-header" role="banner" aria-label="Cabeçalho do chat">
             <span>EXA Assistant</span>
-            <button id="minimize-chat" title="Minimizar Chat">─</button>
-            <button id="settings-gear" title="Configurações">
-                <i class="fas fa-cog"></i>
+            <button id="minimize-chat" title="Minimizar Chat" aria-label="Minimizar Chat" tabindex="0">─</button>
+            <button id="settings-gear" title="Configurações" aria-label="Abrir configurações">
+        <i class="fas fa-cog"></i>
             </button>
         </div>
 
           <!-- Indicador de status fixo no topo -->
             <div id="chat-status" style="text-align: center; font-size: 14px; color: #28a745; padding: 5px 0; background: #f1f1f1; border-bottom: 1px solid #ccc;">Online</div>
         
-          <!-- menu de configurações -->
-            <div id="settings-menu">
-            <h3>Configurações</h3>
-            <div class="settings-item">
-                <label for="theme-toggle">Tema Claro/Escuro</label>
-                <input type="checkbox" id="theme-toggle">
-            </div>
-            <div id="chat-box-content" style="display: flex; flex-direction: column; height: 100%;"></div>
-            <div class="settings-item">
-                <label for="language-select">Idioma</label>
-                <span id="current-language">Automático</span>
-            </div>
-
-            <div id="language-options" style="display: none; margin-top: 10px;">
-                <button class="language-btn" data-language="en">Inglês</button>
-                <button class="language-btn" data-language="pt">Português</button>
-            </div>
-        </div>
+          <!-- Menu de Configurações -->
+<div id="settings-menu" aria-hidden="true" role="dialog" aria-label="Menu de Configurações">
+    <h3>Ajustes de Acessibilidade</h3>
+    <div class="settings-item">
+        <label for="theme-toggle">Tema Claro/Escuro</label>
+        <input type="checkbox" id="theme-toggle">
+    </div>
+    <div class="settings-item">
+        <label for="font-size-control">Ajustar tamanho da fonte:</label>
+        <button id="increase-font" aria-label="Aumentar fonte">A+</button>
+        <button id="decrease-font" aria-label="Diminuir fonte">A-</button>
+        <button id="reset-font" aria-label="Resetar fonte">Resetar</button>
+    </div>
+    <div id="chat-box-content" style="display: flex; flex-direction: column; height: 100%;"></div>
+    <div class="settings-item">
+        <label for="language-select">Idioma</label>
+        <span id="current-language">Automático</span>
+    </div>
+</div>
             
         <div id="chat-box-messages">
             <div id="chat-box-messages" style="flex: 1; overflow-y: auto; padding: 10px;"></div>
@@ -817,6 +832,58 @@
         const currentLanguage = document.getElementById('current-language'); // Botão "Automático" 
         const themeToggle = document.getElementById('theme-toggle'); // Referência ao botão de alternância de tema
         const chatStatus = document.getElementById('chat-status'); // Seleciona o elemento do status
+
+// Controles de tamanho de fonte
+const increaseFontBtn = document.getElementById('increase-font');
+const decreaseFontBtn = document.getElementById('decrease-font');
+const resetFontBtn = document.getElementById('reset-font');
+
+let currentFontSize = 1; // Tamanho padrão
+
+// Funções para manipular o tamanho da fonte
+const updateFontSize = (sizeMultiplier) => {
+    currentFontSize = sizeMultiplier;
+    chatBox.style.fontSize = `${currentFontSize}rem`;
+};
+
+increaseFontBtn.addEventListener('click', () => {
+    updateFontSize(Math.min(currentFontSize + 0.1, 1.5)); // Limita a 1.5x o tamanho padrão
+});
+
+decreaseFontBtn.addEventListener('click', () => {
+    updateFontSize(Math.max(currentFontSize - 0.1, 0.8)); // Limita a 0.8x o tamanho padrão
+});
+
+resetFontBtn.addEventListener('click', () => {
+    updateFontSize(1); // Reseta ao tamanho padrão
+});
+
+// Tornar menu acessível
+settingsMenu.setAttribute('aria-hidden', 'true');
+settingsMenu.addEventListener('focusout', (event) => {
+    if (!settingsMenu.contains(event.relatedTarget)) {
+        settingsMenu.setAttribute('aria-hidden', 'true');
+    }
+});
+
+// Ajusta o foco para elementos interativos
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab') {
+        const focusableElements = chatBox.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+        }
+    }
+});
 
     // Função para atualizar o status do chat dinamicamente
     const atualizarStatus = (status) => {
