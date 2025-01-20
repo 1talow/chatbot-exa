@@ -35,6 +35,44 @@
             animation: none;
         }
 
+        /* Adicionando as animações de minimizar e expandir */
+@keyframes genie-in {
+    0% {
+        transform: scale(1) translate(0, 0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) translate(50%, 50%);
+        opacity: 0;
+    }
+}
+
+@keyframes genie-out {
+    0% {
+        transform: scale(0) translate(50%, 50%);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 1;
+    }
+}
+
+/* Aplicando estilos para o chat durante a animação */
+#chat-box {
+    transform-origin: bottom right;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#chat-box.hidden {
+    animation: genie-in 0.3s forwards;
+}
+
+#chat-box.visible {
+    animation: genie-out 0.3s forwards;
+}
+
+
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% {
                 transform: translateY(0);
@@ -864,6 +902,9 @@
         const themeToggle = document.getElementById('theme-toggle'); // Referência ao botão de alternância de tema
         const chatStatus = document.getElementById('chat-status'); // Seleciona o elemento do status
 
+
+
+        
 // Controles de tamanho de fonte
 const increaseFontBtn = document.getElementById('increase-font');
 const decreaseFontBtn = document.getElementById('decrease-font');
@@ -1118,7 +1159,7 @@ if (!isClickInsideChat && !isClickInsideWidget) {
         let mensagemInicialExibida = false;
         let userScrolling = false; // Variável para controlar o estado do scroll
         let isRotatedRight = false; // Controle da direção atual
-        
+        let isAnimating = false; 
 
         // Botão de minimizar, clicando "fora" do site
     minimizeButton.addEventListener('click', () => {
@@ -1387,11 +1428,55 @@ document.addEventListener('click', (event) => {
         });
 
 
-    // Também fecha o balão ao abrir o chat
-    chatWidget.addEventListener('click', () => {
+    // Exibe a saudação inicial ao abrir o chat pela primeira vez
+chatWidget.addEventListener('click', () => {
     if (!mensagemInicialExibida) {
         exibirSaudacaoInicial(); // Exibe a saudação
         mensagemInicialExibida = true; // Garante execução única
+    }
+});
+
+// Alterna o estado do chat ao clicar no ícone do balão
+chatWidget.addEventListener('click', () => {
+    if (isAnimating) return; // Evita conflitos de animação
+
+    if (!chatBox.classList.contains('visible')) {
+        // Abrir o chat
+        isAnimating = true;
+        chatBox.classList.remove('hidden');
+        chatBox.classList.add('visible'); // Adiciona animação de abertura
+        chatBox.addEventListener('animationend', () => {
+            isAnimating = false;
+        }, { once: true });
+    }
+});
+
+// Função para minimizar o chat
+const minimizeChat = () => {
+    if (isAnimating) return; // Evita conflitos de animação
+
+    if (chatBox.classList.contains('visible')) {
+        // Minimizar o chat
+        isAnimating = true;
+        chatBox.classList.remove('visible');
+        chatBox.classList.add('hidden'); // Adiciona animação de fechamento
+        chatBox.addEventListener('animationend', () => {
+            isAnimating = false;
+        }, { once: true });
+    }
+};
+
+// Evento para minimizar o chat ao clicar no botão de minimizar
+minimizeButton.addEventListener('click', minimizeChat);
+
+// Evento para minimizar o chat ao clicar fora do chat
+document.addEventListener('click', (event) => {
+    if (
+        !chatBox.contains(event.target) && // Clicou fora do chat
+        !chatWidget.contains(event.target) && // Clicou fora do ícone do balão
+        chatBox.classList.contains('visible') // O chat está visível
+    ) {
+        minimizeChat();
     }
 });
 
