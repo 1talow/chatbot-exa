@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +8,10 @@
         body {
             font-family: Arial, sans-serif;
         }
-        
+
+        /* ----------------------------------------------------------
+           ÍCONE DO CHAT (WIDGET)
+        ---------------------------------------------------------- */
         #chat-widget {
             position: fixed;
             bottom: 20px;
@@ -35,74 +37,11 @@
             animation: none;
         }
 
-        /* Adicionando as animações de minimizar e expandir */
-        @keyframes genie-in {
-    0% {
-        transform: scale(1) translate(0, 0);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0) translate(50%, 50%);
-        opacity: 0;
-    }
-}
-
-@keyframes genie-out {
-    0% {
-        transform: scale(0) translate(50%, 50%);
-        opacity: 0;
-    }
-    100% {
-        transform: scale(1) translate(0, 0);
-        opacity: 1;
-    }
-}
-
-/* Aplicando estilos para o chat durante a animação */
-#chat-box {
-    transform-origin: bottom right; /* Origem da animação */
-    transition: transform 0.3s ease, opacity 0.3s ease; /* Suavidade nas transformações */
-}
-
-/* Animação de expandir */
-#chat-box.visible {
-    animation: genie-out 0.3s forwards;
-}
-
-/* Animação de retroceder */
-#chat-box.closing {
-    animation: genie-in 0.3s forwards;
-}
-
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
         }
-
-        @keyframes desintegrar {
-            0% {
-             opacity: 1;
-             transform: scale(1);
-             filter: blur(0);
-            }
-            100% {
-             opacity: 0;
-             transform: scale(0.9);
-             filter: blur(5px);
-            }
-        }
-
-.desintegrando {
-    animation: desintegrar 0.5s ease-out forwards;
-}
-
 
         #chat-widget-notification {
             position: absolute;
@@ -120,30 +59,74 @@
             border-radius: 50%;
         }
 
+        /* ----------------------------------------------------------
+           ANIMAÇÕES DE MINIMIZAR / EXPANDIR (GENIE)
+        ---------------------------------------------------------- */
+        @keyframes genie-in {
+            0% {
+                transform: scale(1) translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) translate(50%, 50%);
+                opacity: 0;
+            }
+        }
+        @keyframes genie-out {
+            0% {
+                transform: scale(0) translate(50%, 50%);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translate(0, 0);
+                opacity: 1;
+            }
+        }
+
+        /* ----------------------------------------------------------
+           CAIXA DO CHAT (CHAT-BOX)
+        ---------------------------------------------------------- */
         #chat-box {
-    position: fixed;
-    bottom: 100px;
-    right: 20px;
-    width: 330px;
-    height: 600px;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    opacity: 0;
-    transform: scale(0);
-    transform-origin: bottom right;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 330px;
+            height: 600px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            
 
-#chat-box.visible {
-    opacity: 1;
-    transform: scale(1);
-    animation: genie-out 0.3s forwards;
-}
+            /* Mantemos transition se quiser, mas cuidado p/ não conflitar com as keyframes
+               transition: transform 0.3s ease, opacity 0.3s ease; */
 
+            opacity: 0;
+            transform: scale(0.9);
+            transform-origin: bottom right;
+            overflow: hidden; /* Remove qualquer conteúdo que "escorregue" pelas bordas */
+        }
+
+        /* Quando o chat está realmente oculto */
+        #chat-box.hidden {
+            display: none; /* some da tela */
+        }
+
+        /* Abriu (visível) -> animação de "genie-out" (expandir) */
+        #chat-box.visible {
+            animation: genie-out 0.3s forwards;
+        }
+
+        /* Fechando -> animação de "genie-in" (encolher) */
+        #chat-box.closing {
+            animation: genie-in 0.3s forwards;
+        }
+
+        /* ----------------------------------------------------------
+           CABEÇALHO DO CHAT
+        ---------------------------------------------------------- */
         #chat-box-header {
             background-color: #314b73;
             color: white;
@@ -151,220 +134,189 @@
             border-radius: 10px 10px 0 0;
             text-align: center;
             font-weight: bold;
-            font-size: 18px; /* Aumenta o tamanho do título, se quiser */
-            text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor do texto */
-        }
-
-        #chat-box-messages {
-            flex: 1;
-            padding: 10px;
-            overflow-y: auto;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px black;
             position: relative;
         }
 
-        #chat-box-messages div {
-            margin-bottom: 10px;
-        }
-
-        .user {
-            font-weight: bold;
-            color: #000; /* Texto preto */
-        }
-
-        .ExaBot {
-            font-weight: bold;
-            color: #314b73;
-        }
-
-        .ExaBot-message {
-            color: black;
-            font-weight: normal;
-        }
-
-        .typing-indicator {
-            font-style: italic;
-            color: #777;
-        }
-
-        #chat-box-input {
-            display: flex;
-            border-top: 1px solid #ccc;
-        }
-
-        #chat-box-input input {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 0 0 0 10px;
-            font-size: 15px; /* Aumenta o tamanho da fonte */
-        }
-
-        #chat-box-input button {
-            padding: 10px;
-            background-color: #314b73;
-            color: white;
-            border: none;
-            border-radius: 0 0 10px 0;
-            font-size: 14px; /* Aumenta o tamanho da fonte */
-            cursor: pointer;
-            font-weight: bold; /* Deixa o texto do botão em negrito */
-            text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor do texto */
-        }
-
         #minimize-chat {
-           position: absolute;
-           top: 10px;
-           right: 10px;
-           background-color: transparent;
-           border: none;
-           font-size: 16px;
-           font-weight: bold;
-           color: white;
-           cursor: pointer;
-           outline: none;
-           
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            outline: none;
+        }
+        #minimize-chat:hover {
+            color: #ccc;
         }
 
         #settings-gear {
-    position: absolute;
-    top: 10px;
-    right: 43px; /* Ajusta a posição ao lado do botão de minimizar */
-    background-color: transparent;
-    border: none;
-    font-size: 20px; /* Tamanho da engrenagem */
-    color: white;
-    cursor: pointer;
-    outline: none;
-    padding: 0; /* Remove espaçamento interno */
-    transition: transform 0.3s ease; /* Suaviza a rotação */
-    transform-origin: center center; /* Garante rotação no centro */
-    width: 24px; /* Tamanho fixo para evitar deslocamento */
-    height: 24px; /* Tamanho fixo para evitar deslocamento */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#settings-gear.rotate-right {
-    transform: rotate(90deg); /* Gira 90 graus para a direita */
-}
-
-#settings-gear.rotate-left {
-    transform: rotate(-90deg); /* Gira 90 graus para a esquerda */
-}
-
-
+            position: absolute;
+            top: 10px;
+            right: 43px; 
+            background-color: transparent;
+            border: none;
+            font-size: 20px; 
+            color: white;
+            cursor: pointer;
+            outline: none;
+            padding: 0; 
+            transition: transform 0.3s ease; 
+            transform-origin: center center; 
+            width: 24px; 
+            height: 24px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #settings-gear.rotate-right {
+            transform: rotate(90deg);
+        }
+        #settings-gear.rotate-left {
+            transform: rotate(-90deg);
+        }
         #settings-gear:hover {
-           color: #ccc; /* Cor mais clara no hover */
+            color: #ccc; 
         }
 
+        /* ----------------------------------------------------------
+           STATUS FIXO
+        ---------------------------------------------------------- */
+        #chat-status {
+            text-align: center;
+            font-size: 14px;
+            color: #28a745; /* cor verde (online) */
+            padding: 5px 0;
+            background: #f1f1f1;
+            border-bottom: 1px solid #ccc;
+        }
+
+        /* Diferentes status e suas cores */
+        #chat-box.light-theme #chat-status.online {
+            color: #28a745 !important; /* Verde */
+        }
+        #chat-box.light-theme #chat-status.processando {
+            color: #ffa500 !important; /* Amarelo (processando) */
+        }
+        #chat-box.light-theme #chat-status.offline {
+            color: #dc3545 !important; /* Vermelho */
+        }
+
+        #chat-box.dark-theme #chat-status.online {
+            color: #4caf50 !important; /* Verde claro no escuro */
+        }
+        #chat-box.dark-theme #chat-status.processando {
+            color: #ffc107 !important; /* Amarelo claro */
+        }
+        #chat-box.dark-theme #chat-status.offline {
+            color: #ff6f61 !important; /* Vermelho suave */
+        }
+
+        /* ----------------------------------------------------------
+           MENU DE CONFIGURAÇÕES
+        ---------------------------------------------------------- */
         #settings-menu {
-           position: absolute;
-           top: 50px;
-           right: 10px;
-           background-color: #ffffff;
-           border: 1px solid #ccc;
-           border-radius: 10px;
-           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-           padding: 15px;
-           display: none; /* Começa oculto */
-           z-index: 1000;
-           width: 278px;
-           font-family: Arial, sans-serif;
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: none;
+            z-index: 1000;
+            width: 278px;
+            font-family: Arial, sans-serif;
+        }
+        #settings-menu h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+        }
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            margin-bottom: 20px; /* Espaço entre os itens */
+            gap: none; /* Adiciona espaço entre o texto e o botão */
+        }
+        /* Estilo para os botões menores e juntos */
+        #settings-menu .settings-item button {
+            cursor: pointer; /* Ao passar o mouse, vira “mãozinha” */
+            padding: 2px 6px; /* Reduz o tamanho interno dos botões */
+            font-size: 0.8rem; /* Deixa a fonte menor */
+            margin: 0; /* Remove espaçamento externo dos botões */
+            border-radius: 5px; /* Mantém bordas arredondadas */
+        }
+        /* Espaçamento entre nome da configuração e os botões */
+        #settings-menu .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px; /* Espaçamento entre os itens */
         }
 
-        #settings-menu button {
-    padding: 2px 5px; /* Aumenta o tamanho interno dos botões */
-    font-size: 0.9rem; /* Ajusta o tamanho da fonte nos botões */
+         /* Alinhamento do texto */
+        #settings-menu .settings-item label {
+           font-size: 0.9rem; /* Tamanho do texto */
+           line-height: 1.2; /* Alinha o texto verticalmente */
+           display: inline-block; /* Garante alinhamento correto */
+           margin-right: auto; /* Alinha texto à esquerda, se necessário */
+        }
 
-    /* Estilo para os botões menores e juntos */
-    #settings-menu .settings-item button {
-    padding: 5px 10px; /* Reduz o tamanho interno dos botões */
-    font-size: 0.8rem; /* Deixa a fonte menor */
-    margin: 0; /* Remove espaçamento externo dos botões */
-    border-radius: 5px; /* Mantém bordas arredondadas */
-}
-}
-
-/* Espaçamento entre nome da configuração e os botões */
-#settings-menu .settings-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px; /* Espaçamento entre os itens */
-}
-
-/* Alinhamento do texto */
-#settings-menu .settings-item label {
-    font-size: 0.9rem; /* Tamanho do texto */
-    line-height: 1.2; /* Alinha o texto verticalmente */
-    display: inline-block; /* Garante alinhamento correto */
-    margin-right: auto; /* Alinha texto à esquerda, se necessário */
-}
-
-        #settings-menu h3 {
-        margin: 0 0 10px 0;
-        font-size: 18px;
-        color: #333;
-        text-align: center;
-         }
-
-        .settings-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        margin-bottom: 20px; /* Espaço entre os itens */
-        gap: none; /* Adiciona espaço entre o texto e o botão */
-         }
-
+        #settings-menu .settings-item button:hover {
+           background-color: #444;  /* cor de fundo mais escura ao hover */
+           color: #fff;            /* texto branco, se quiser */
+        }
+        
         #current-language {
-        font-size: 14px;
-        cursor: pointer; /* Mostra o cursor de mão ao passar o mouse */
-        color: #666; /* Cor cinza para o texto "Automático" */
-         }
+           font-size: 14px;
+           cursor: pointer; /* Mostra o cursor de mão ao passar o mouse */
+           color: #666; /* Cor cinza para o texto "Automático" */
+        }
 
         #language-options {
-        display: flex;
-        flex-direction: column;
-        gap: 10px; /* Espaçamento entre os botões */
-         }
+           display: flex;
+           flex-direction: column;
+           gap: 10px; /* Espaçamento entre os botões */
+        }
 
         .language-btn {
-        background-color: #314b73;
-        color: white;
-        border: none;
-        padding: 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-        text-align: center;
-         }
+           background-color: #314b73;
+           color: white;
+           border: none;
+           padding: 10px;
+           border-radius: 5px;
+           cursor: pointer;
+           font-size: 14px;
+           text-align: center;
+        }
 
         .ExaBot-support-message {
-         background-color: #ffffff; /* Fundo branco */
-         border: 1px solid #ccc; /* Borda cinza clara */
-         border-radius: 10px; /* Cantos arredondados */
-         padding: 15px; /* Espaçamento interno */
-         color: #333; /* Texto escuro */
-         font-size: 14px; /* Tamanho do texto */
-         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
-         margin-bottom: 10px; /* Espaçamento entre mensagens */
-         line-height: 1.5; /* Altura da linha para melhor legibilidade */
-         }
-
+            background-color: #ffffff; /* Fundo branco */
+            border: 1px solid #ccc; /* Borda cinza clara */
+            border-radius: 10px; /* Cantos arredondados */
+            padding: 15px; /* Espaçamento interno */
+            color: #333; /* Texto escuro */
+            font-size: 14px; /* Tamanho do texto */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
+            margin-bottom: 10px; /* Espaçamento entre mensagens */
+            line-height: 1.5; /* Altura da linha para melhor legibilidade */
+        }
 
         .language-btn:hover {
-         background-color: #1e3554; /* Tom mais escuro no hover */
-         }
+            background-color: #1e3554; /* Tom mais escuro no hover */
+        }
 
-
-        .settings-item label {
-         font-size: 14px;
-         color: #333;
-         }
-
-         #theme-toggle {
+        #theme-toggle {
          width: 40px;
          height: 20px;
          appearance: none;
@@ -405,431 +357,420 @@
             background-color: #1e3554;
             border-color: #003366; /* Altera a cor da borda ao passar o mouse, se quiser */
         }
-
-         /* Animação de digitação (três pontinhos) */
-    .typing-indicator {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 30px;
-    }
-
-    .typing-indicator span {
-        width: 8px;
-        height: 8px;
-        margin: 0 3px;
-        background-color: #314b73;
-        border-radius: 50%;
-        display: inline-block;
-        animation: bounce 1.4s infinite ease-in-out;
-    }
-
-    .typing-indicator span:nth-child(1) {
-        animation-delay: -0.32s;
-    }
-
-    .typing-indicator span:nth-child(2) {
-        animation-delay: -0.16s;
-    }
-
-    .typing-indicator span:nth-child(3) {
-        animation-delay: 0;
-    }
-
-    .hidden {
-    opacity: 0; /* Elemento invisível inicialmente */
-    visibility: hidden;
-    transition: opacity 0.2s ease-in; /* Suaviza a exibição */
-    }
-
-    /* Balão de pensamento */
-    #thought-bubble {
-    position: fixed;
-    bottom: 90px;
-    right: 25px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    padding: 10px 15px;
-    max-width: 250px;
-    font-size: 14px;
-    display: none;
-    animation: fadeIn 0.5s ease;
-    }
-
-    #thought-bubble::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    right: 15px;
-    border-width: 10px;
-    border-style: solid;
-    border-color: white transparent transparent transparent;
-    }
-
-    #thought-bubble-close {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: transparent;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    }
-
-    @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    }
-
-    .question-btn {
-        background-color: #314b73;
-        color: white;
-        border: 2px solid #25344f; /* Azul escuro para combinar */
-        border-radius: 15px 15px 15px 0; /* Arredonda apenas os cantos direito */
-        padding: 12px; /* Um leve aumento no espaçamento interno */
-        margin-bottom: 10px;
-        cursor: pointer;
-        text-align: left;
-        font-size: 15px; /* Aumenta o tamanho da letra */
-        font-weight: bold; /* Deixa o texto em negrito */
-        text-shadow: 1px 1px 2px black; /* Adiciona borda preta ao redor das letras */
-        position: relative; /* Necessário para a ponta */
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Sombra leve e estática */
-    }
-    
-    #predefined-questions {
-    display: none;
-}
-
-    .question-btn:hover {
-        background-color: #1e3554;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Sombra mais intensa no hover */
-    }
-
-    @media (max-width: 768px) {
-    #chat-box {
-        width: 90%; /* Ajusta para ocupar 90% da largura da tela */
-        bottom: 20px; /* Aproxima do fundo */
-        right: 5%; /* Centraliza horizontalmente */
-        height: 60%; /* Reduz a altura */
-    }
-
-    #chat-widget {
-        bottom: 10px; /* Aproxima mais do fundo */
-        right: 10px; /* Ajusta a posição lateral */
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-    }
-
-    #thought-bubble {
-        bottom: 70px; /* Ajusta a posição para telas menores */
-        right: 10px;
-        max-width: 200px; /* Reduz o tamanho do balão */
-        font-size: 12px;
-    }
-
-    #chat-box-header {
-        font-size: 16px; /* Reduz o tamanho do título */
-    }
-
-    .question-btn {
-        font-size: 14px; /* Reduz o tamanho do texto nos botões */
-        padding: 10px; /* Ajusta o espaçamento interno */
-    }
-    }
-
-    @media (max-width: 480px) {
-    #chat-box {
-        height: 50%; /* Reduz ainda mais a altura em telas muito pequenas */
-    }
-
-    #chat-widget {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-    }
-
-    #thought-bubble {
-        font-size: 10px; /* Reduz o texto do balão */
-    }
-
-    .question-btn {
-        font-size: 12px; /* Ajusta o texto das perguntas */
-        padding: 8px;
-    }
-    
-    }
-
-    /* Tema claro (padrão) */
-#chat-box.light-theme {
-    --background-color: #f9f9f9;
-    --text-color: #333;
-    --header-color: #314b73;
-    --input-background: #ffffff;
-    --input-text-color: #333;
-    --button-background: #314b73;
-    --button-hover: #1e3554;
-}
-
-/* Estilo do texto no menu de configurações para o tema claro */
-#chat-box.light-theme #settings-menu {
-    background-color: #ffffff; /* Fundo branco */
-    color: #333; /* Texto escuro */
-    border: 1px solid #ccc; /* Borda clara */
-}
-
-/* Tema claro (padrão) */
-#chat-box.light-theme .ExaBot-message {
-    color: black; /* Cor do texto no tema claro */
-}
-
-/* Título do menu de configurações no tema claro */
-#chat-box.light-theme #settings-menu h3 {
-    color: #333; /* Texto escuro */
-}
-
-#chat-box.light-theme .user {
-    color: #ff6f00; /* Cor das mensagens do usuário */
-}
-
-/* Cor do nome "ExaBot" no tema claro */
-#chat-box.light-theme .ExaBot {
-    color: #314b73; /* Cor original para o tema claro */
-}
-
-/* Tema escuro */
-#chat-box.dark-theme {
-    --background-color: #1e1e1e;
-    --text-color: #f9f9f9;
-    --header-color: #314b73;
-    --input-background: #333;
-    --input-text-color: #f9f9f9;
-    --button-background: #314b73;
-    --button-hover: #1e3554;
-}
-
-/* Estilo específico para os rótulos e textos */
-#chat-box.dark-theme #settings-menu label,
-#chat-box.dark-theme #settings-menu span {
-    color: #f9f9f9; /* Texto branco */
-    font-family: Arial, sans-serif; /* Mesma fonte padrão */
-}
-
-/* Estilo do texto no menu de configurações para o tema escuro */
-#chat-box.dark-theme #settings-menu {
-    background-color: #333; /* Fundo escuro */
-    color: #f9f9f9; /* Texto branco */
-    border: 1px solid #555; /* Borda escura */
-}
-
-/* Tema escuro */
-#chat-box.dark-theme .ExaBot-message {
-    color: white; /* Cor do texto no tema escuro */
-}
-
-/* Título do menu de configurações no tema escuro */
-#chat-box.dark-theme #settings-menu h3 {
-    color: #f9f9f9; /* Texto branco */
-    font-family: Arial, sans-serif; /* Mesma fonte do restante */
-}
-
-#chat-box.dark-theme .user {
-    color: #ffae42; /* Ajusta para melhor visibilidade no tema escuro */
-}
-
-/* Cor do nome "ExaBot" no tema escuro */
-#chat-box.dark-theme .ExaBot {
-    color: #4caf50; /* Um tom de verde mais claro para melhor contraste */
-}
-
-/* Status no tema claro */
-#chat-box.light-theme #chat-status {
-    background-color: #f1f1f1 !important;
-    border-bottom: 1px solid #ccc !important;
-}
-
-/* Status específico para "online", "processando" e "offline" no tema claro */
-#chat-box.light-theme #chat-status.online {
-    color: #28a745 !important; /* Verde */
-}
-
-#chat-box.light-theme #chat-status.processando {
-    color: #ffa500 !important; /* Amarelo */
-}
-
-#chat-box.light-theme #chat-status.offline {
-    color: #dc3545 !important; /* Vermelho */
-}
-
-/* Status no tema escuro */
-#chat-box.dark-theme #chat-status {
-    background-color: #333 !important;
-    border-bottom: 1px solid #555 !important;
-}
-
-/* Status específico para "online", "processando" e "offline" no tema escuro */
-#chat-box.dark-theme #chat-status.online {
-    color: #4caf50 !important; /* Verde claro */
-}
-
-#chat-box.dark-theme #chat-status.processando {
-    color: #ffc107 !important; /* Amarelo claro */
-}
-
-#chat-box.dark-theme #chat-status.offline {
-    color: #ff6f61 !important; /* Vermelho suave */
-}
-
-/* Tema claro */
-#chat-box.light-theme #chat-status {
-    background-color: #f1f1f1; /* Fundo claro */
-    border-bottom: 1px solid #ccc; /* Borda clara */
-}
-
-/* Tema escuro */
-#chat-box.dark-theme #chat-status {
-    background-color: #333; /* Fundo escuro */
-    border-bottom: 1px solid #555; /* Borda escura */
-}
-
-
-/* Aplicação das variáveis ao ExaBot */
-#chat-box {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    border-color: var(--header-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Cor do texto de placeholder no campo de entrada no tema claro */
-#chat-box.light-theme #chat-input::placeholder {
-    color: #666; /* Cor cinza para o tema claro */
-}
-
-/* Cor do texto de placeholder no campo de entrada no tema escuro */
-#chat-box.dark-theme #chat-input::placeholder {
-    color: #f9f9f9; /* Cor branca para o tema escuro */
-}
-
-/* Cor do texto digitado no campo de entrada no tema claro */
-#chat-box.light-theme #chat-input {
-    color: #333; /* Cor preta para o tema claro */
-}
-
-/* Cor do texto digitado no campo de entrada no tema escuro */
-#chat-box.dark-theme #chat-input {
-    color: #f9f9f9; /* Cor branca para o tema escuro */
-}
-
-/* Mantém o estilo do botão alternador no tema escuro */
-#chat-box #theme-toggle {
-    background-color: #ccc; /* Cor padrão do botão */
-}
-
-/* Estilo do balão de mensagens no chat */
-.ExaBot-support-message {
-    background-color: #ffffff; /* Fundo branco */
-    color: #000000; /* Texto preto */
-    border: 1px solid #ccc; /* Borda cinza clara */
-    border-radius: 10px; /* Cantos arredondados */
-    padding: 15px; /* Espaçamento interno */
-    font-size: 14px; /* Tamanho do texto */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
-    margin-bottom: 10px; /* Espaçamento entre mensagens */
-    line-height: 1.5; /* Altura da linha para melhor legibilidade */
-}
-
-#chat-box #theme-toggle:checked {
-    background-color: #4caf50; /* Verde para o botão ativado */
-}
-
-#chat-box-header {
-    background-color: var(--header-color);
-}
-
-#chat-box-input {
-    background-color: var(--input-background);
-}
-
-#chat-box-input input {
-    background-color: var(--input-background);
-    color: var(--input-text-color);
-    border: none;
-    border-radius: 0 0 0 10px; /* Arredonda apenas o canto inferior esquerdo */
-}
-
-#chat-box-input button {
-    background-color: var(--button-background);
-    border-radius: 0 0 10px 0; /* Arredonda apenas o canto inferior direito */
-}
-
-#chat-box-input button:hover {
-    background-color: var(--button-hover);
-}
-
-/* Estilo do scrollbar para navegadores WebKit (Chrome, Edge, etc.) */
-#chat-box-messages::-webkit-scrollbar {
-    width: 6px; /* Largura do scroll */
-}
-
-#chat-box-messages::-webkit-scrollbar-track {
-    background: transparent; /* Fundo do track do scroll */
-}
-
-#chat-box-messages::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2); /* Cor do "polegar" do scroll */
-    border-radius: 10px; /* Bordas arredondadas */
-    border: 2px solid transparent; /* Espaço entre o polegar e o track */
-    background-clip: padding-box; /* Ajuste para evitar que a borda sobreponha */
-}
-
-#chat-box-messages::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.3); /* Cor do polegar ao passar o mouse */
-}
-
-/* Para navegadores que suportam a propriedade "scrollbar-width" */
-#chat-box-messages {
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-    position: relative;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-
-    -webkit-overflow-scrolling: touch; /* Ativa o scroll de elasticidade no iOS e navegadores WebKit */
-    overscroll-behavior: contain; /* Evita propagação do scroll para fora do elemento */
-}
-
-/* Controle de tamanho de fonte */
-.font-small {
-    font-size: 0.9rem;
-}
-
-.font-medium {
-    font-size: 1rem;
-}
-
-.font-large {
-    font-size: 1.2rem;
-}
-
-
-
+        /* ----------------------------------------------------------
+           ÁREA DAS MENSAGENS
+        ---------------------------------------------------------- */
+        #chat-box-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+        }
+        #chat-box-messages div {
+            margin-bottom: 10px;
+        }
+
+        .user {
+            font-weight: bold;
+            color: #ff6f00; /* Laranja para user no tema claro */
+        }
+        .ExaBot {
+            font-weight: bold;
+            color: #314b73;
+        }
+        .ExaBot-message {
+            color: black;
+            font-weight: normal;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: #777;
+        }
+
+        /* ----------------------------------------------------------
+           RODAPÉ DO CHAT (INPUT + BOTÃO)
+        ---------------------------------------------------------- */
+        #chat-box-input {
+            display: flex;
+            border-top: 1px solid #ccc;
+        }
+        #chat-box-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 0 0 0 10px;
+            font-size: 15px;
+        }
+        #chat-box-input button {
+            padding: 10px;
+            background-color: #314b73;
+            color: white;
+            border: none;
+            border-radius: 0 0 10px 0;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+        #chat-box-input button:hover {
+            background-color: #1e3554;
+            border-color: #003366; /* Altera a cor da borda ao passar o mouse, se quiser */
+        }
+
+        /* ----------------------------------------------------------
+           ANIMAÇÃO DE DIGITAÇÃO (3 bolinhas)
+        ---------------------------------------------------------- */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            margin: 0 3px;
+            background-color: #314b73;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        /* ----------------------------------------------------------
+           BALÃO DE PENSAMENTO
+        ---------------------------------------------------------- */
+        #thought-bubble {
+            position: fixed;
+            bottom: 90px;
+            right: 25px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            max-width: 250px;
+            font-size: 14px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        #thought-bubble::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            right: 15px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+        #thought-bubble-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ----------------------------------------------------------
+           ANIMAÇÃO "DESINTEGRAR"
+        ---------------------------------------------------------- */
+        @keyframes desintegrar {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.9);
+                filter: blur(5px);
+            }
+        }
+        .desintegrando {
+            animation: desintegrar 0.5s ease-out forwards;
+        }
+
+        /* ----------------------------------------------------------
+           PERGUNTAS PRÉ-DEFINIDAS
+        ---------------------------------------------------------- */
+        #predefined-questions {
+            display: none;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        .question-btn {
+            background-color: #314b73;
+            color: white;
+            border: 2px solid #25344f;
+            border-radius: 15px 15px 15px 0;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 15px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+            position: relative;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .question-btn.hidden {
+            visibility: hidden;
+        }
+        .question-btn:hover {
+            background-color: #1e3554;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* ----------------------------------------------------------
+           RESPONSIVIDADE
+        ---------------------------------------------------------- */
+        @media (max-width: 768px) {
+            #chat-box {
+                width: 90%;
+                bottom: 20px;
+                right: 5%;
+                height: 60%;
+            }
+            #chat-widget {
+                bottom: 10px;
+                right: 10px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            #thought-bubble {
+                bottom: 70px;
+                right: 10px;
+                max-width: 200px;
+                font-size: 12px;
+            }
+            #chat-box-header {
+                font-size: 16px;
+            }
+            .question-btn {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            #chat-box {
+                height: 50%;
+            }
+            #chat-widget {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            #thought-bubble {
+                font-size: 10px;
+            }
+            .question-btn {
+                font-size: 12px;
+                padding: 8px;
+            }
+        }
+
+        /* ----------------------------------------------------------
+           TEMA CLARO E ESCURO
+        ---------------------------------------------------------- */
+        #chat-box.light-theme {
+            --background-color: #f9f9f9;
+            --text-color: #333;
+            --header-color: #314b73;
+            --input-background: #ffffff;
+            --input-text-color: #333;
+            --button-background: #314b73;
+            --button-hover: #1e3554;
+        }
+        #chat-box.light-theme .ExaBot-message {
+            color: black; 
+        }
+        #chat-box.light-theme .user {
+            color: #ff6f00; /* Laranja no tema claro */
+        }
+        #chat-box.light-theme .ExaBot {
+            color: #314b73; 
+        }
+        #chat-box.light-theme #settings-menu {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+        #chat-box.light-theme #settings-menu h3 {
+            color: #333; 
+        }
+
+        #chat-box.dark-theme {
+            --background-color: #1e1e1e;
+            --text-color: #f9f9f9;
+            --header-color: #314b73;
+            --input-background: #333;
+            --input-text-color: #f9f9f9;
+            --button-background: #314b73;
+            --button-hover: #1e3554;
+        }
+        #chat-box.dark-theme .ExaBot-message {
+            color: white;
+        }
+        #chat-box.dark-theme .user {
+            color: #ffae42; /* Laranja mais clara no tema escuro */
+        }
+        #chat-box.dark-theme .ExaBot {
+            color: #4caf50; /* Verde para ExaBot no escuro */
+        }
+        #chat-box.dark-theme #settings-menu {
+            background-color: #333;
+            color: #f9f9f9;
+            border: 1px solid #555;
+        }
+        #chat-box.dark-theme #settings-menu h3 {
+            color: #f9f9f9; 
+            font-family: Arial, sans-serif;
+        }
+
+        /* Status no tema claro */
+        #chat-box.light-theme #chat-status {
+            background-color: #f1f1f1 !important;
+            border-bottom: 1px solid #ccc !important;
+        }
+
+        /* Status específico para "online", "processando" e "offline" no tema claro */
+        #chat-box.light-theme #chat-status.online {
+            color: #28a745 !important; /* Verde */
+        }
+
+        #chat-box.light-theme #chat-status.processando {
+            color: #ffa500 !important; /* Amarelo */
+        }
+
+        #chat-box.light-theme #chat-status.offline {
+            color: #dc3545 !important; /* Vermelho */
+        }
+
+        /* Status no tema escuro */
+        #chat-box.dark-theme #chat-status {
+            background-color: #333 !important;
+            border-bottom: 1px solid #555 !important;
+        }
+
+        /* Status específico para "online", "processando" e "offline" no tema escuro */
+        #chat-box.dark-theme #chat-status.online {
+            color: #4caf50 !important; /* Verde claro */
+        }
+
+        #chat-box.dark-theme #chat-status.processando {
+            color: #ffc107 !important; /* Amarelo claro */
+        }
+
+        #chat-box.dark-theme #chat-status.offline {
+            color: #ff6f61 !important; /* Vermelho suave */
+        }
+
+        /* Tema claro */
+        #chat-box.light-theme #chat-status {
+            background-color: #f1f1f1; /* Fundo claro */
+            border-bottom: 1px solid #ccc; /* Borda clara */
+        }
+
+        /* Tema escuro */
+        #chat-box.dark-theme #chat-status {
+            background-color: #333; /* Fundo escuro */
+            border-bottom: 1px solid #555; /* Borda escura */
+        }
+
+        /* Cor do texto de placeholder no campo de entrada no tema claro */
+        #chat-box.light-theme #chat-input::placeholder {
+            color: #666; /* Cor cinza para o tema claro */
+        }
+
+        /* Cor do texto de placeholder no campo de entrada no tema escuro */
+        #chat-box.dark-theme #chat-input::placeholder {
+            color: #f9f9f9; /* Cor branca para o tema escuro */
+        }
+
+        #chat-box.dark-theme #current-language {
+            color: #fff; /* Ou qualquer cor que você preferir */
+        }
+
+        #chat-box {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            border-color: var(--header-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #chat-box-header {
+            background-color: var(--header-color);
+        }
+        #chat-box-input {
+            background-color: var(--input-background);
+        }
+        #chat-box-input input {
+            background-color: var(--input-background);
+            color: var(--input-text-color);
+        }
+        #chat-box-input button {
+            background-color: var(--button-background);
+        }
+        #chat-box-input button:hover {
+            background-color: var(--button-hover);
+        }
+
+        /* Scroll customizado (opcional) */
+        #chat-box-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-box-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #chat-box-messages::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        #chat-box-messages::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        #chat-box-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        /* Tamanho de fonte (botões A+ A- Resetar) */
+        .font-small { font-size: 0.9rem; }
+        .font-medium { font-size: 1rem; }
+        .font-large { font-size: 1.2rem; }
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    </head>
+</head>
 
-    <body>
+<body>
     <div id="chat-widget">
         💬
         <div id="chat-widget-notification">1</div>
@@ -839,55 +780,58 @@
         <p>🤖 Olá! 👋 Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais.</p>
     </div>
 
-    <div id="chat-box" class="light-theme">
+    <div id="chat-box" class="light-theme hidden"><!-- começa oculto -->
         <div id="chat-box-header" role="banner" aria-label="Cabeçalho do chat">
             <span>EXA Assistant</span>
             <button id="minimize-chat" title="Minimizar Chat" aria-label="Minimizar Chat" tabindex="0">─</button>
             <button id="settings-gear" title="Configurações" aria-label="Abrir configurações">
-        <i class="fas fa-cog"></i>
+                <i class="fas fa-cog"></i>
             </button>
         </div>
 
-          <!-- Indicador de status fixo no topo -->
-            <div id="chat-status" style="text-align: center; font-size: 14px; color: #28a745; padding: 5px 0; background: #f1f1f1; border-bottom: 1px solid #ccc;">Online</div>
+        <!-- Status fixo -->
+        <div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0;">Online</div>
         
-          <!-- Menu de Configurações -->
-<div id="settings-menu" aria-hidden="true" role="dialog" aria-label="Menu de Configurações">
-    <h3>Ajustes de Acessibilidade</h3>
-    <div class="settings-item">
-        <label for="theme-toggle">Tema Claro/Escuro</label>
-        <input type="checkbox" id="theme-toggle">
-    </div>
-    <div class="settings-item">
-        <label for="font-size-control">Ajustar tamanho da fonte:</label>
-        <button id="increase-font" aria-label="Aumentar fonte">A+</button>
-        <button id="decrease-font" aria-label="Diminuir fonte">A-</button>
-        <button id="reset-font" aria-label="Resetar fonte">Resetar</button>
-    </div>
-    <div id="chat-box-content" style="display: flex; flex-direction: column; height: 100%;"></div>
-    <div class="settings-item">
-        <label for="language-select">Idioma</label>
-        <span id="current-language">Automático</span>
-    </div>
-</div>
+        <!-- Menu de Configurações -->
+        <div id="settings-menu" aria-hidden="true" role="dialog" aria-label="Menu de Configurações">
+            <h3>Ajustes de Acessibilidade</h3>
+            <div class="settings-item">
+                <label for="theme-toggle">Tema Claro/Escuro</label>
+                <input type="checkbox" id="theme-toggle">
+            </div>
+            <div class="settings-item">
+                <label for="font-size-control">Ajustar tamanho da fonte:</label>
+                <button id="increase-font" aria-label="Aumentar fonte">A+</button>
+                <button id="decrease-font" aria-label="Diminuir fonte">A-</button>
+                <button id="reset-font" aria-label="Resetar fonte">Resetar</button>
+            </div>
+            <div id="chat-box-content" style="display: flex; flex-direction: column; height: 100%;"></div>
+            <div class="settings-item">
+                <label for="language-select">Idioma</label>
+                <span id="current-language" style="cursor:pointer;">Automático</span>
+            </div>
+        </div>
             
         <div id="chat-box-messages">
-            <div id="chat-box-messages" style="flex: 1; overflow-y: auto; padding: 10px;"></div>
-            <div id="predefined-questions" style="flex-direction: column; margin-bottom: 10px;">
+            <!-- Para evitar conflito de IDs duplicados, mantenha só um #chat-box-messages -->
+            <!-- As perguntas pré-definidas vão fora ou dentro, mas mantive conforme seu código -->
+            <div id="predefined-questions" style="margin-bottom: 10px;">
                 <button class="question-btn hidden" data-question="Quais serviços a EXA oferece?">Quais serviços a EXA oferece?</button>
                 <button class="question-btn hidden" data-question="Qual seria o portfólio da EXA?">Qual seria o portfólio da EXA?</button>
                 <button class="question-btn hidden" data-question="Como faço para contratar um serviço?">Como faço para contratar um serviço?</button>
             </div>
         </div>
             
-        
         <div id="chat-box-input" style="border-top: 1px solid #ccc;">
             <input type="text" id="chat-input" placeholder="Digite sua pergunta...">
             <button id="send-button">Enviar</button>
         </div>
-    
-    
+    </div>
+
     <script>
+        /***************************************************************
+         *                   ELEMENTOS DO DOM
+         ***************************************************************/
         const chatWidget = document.getElementById('chat-widget');
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
@@ -896,528 +840,226 @@
         const notification = document.getElementById('chat-widget-notification');
         const thoughtBubble = document.getElementById('thought-bubble');
         const thoughtBubbleClose = document.getElementById('thought-bubble-close');
-        const minimizeButton = document.getElementById('minimize-chat'); // Botão de minimizar
+        const minimizeButton = document.getElementById('minimize-chat');
         const settingsMenu = document.getElementById('settings-menu');
         const settingsGear = document.getElementById('settings-gear');
-        const currentLanguage = document.getElementById('current-language'); // Botão "Automático" 
-        const themeToggle = document.getElementById('theme-toggle'); // Referência ao botão de alternância de tema
-        const chatStatus = document.getElementById('chat-status'); // Seleciona o elemento do status
-
-
-
-        
-// Controles de tamanho de fonte
-const increaseFontBtn = document.getElementById('increase-font');
-const decreaseFontBtn = document.getElementById('decrease-font');
-const resetFontBtn = document.getElementById('reset-font');
-
-let currentFontSize = 1; // Tamanho padrão
-
-// Funções para manipular o tamanho da fonte
-const updateFontSize = (sizeMultiplier) => {
-    currentFontSize = sizeMultiplier;
-    chatBox.style.fontSize = `${currentFontSize}rem`;
-
-    // Garante que o menu de configurações não seja impactado
-    settingsMenu.style.fontSize = '1rem'; // Mantém tamanho fixo para o menu
-};
-
-increaseFontBtn.addEventListener('click', () => {
-    updateFontSize(Math.min(currentFontSize + 0.1, 1.5)); // Limita a 1.5x o tamanho padrão
-});
-
-decreaseFontBtn.addEventListener('click', () => {
-    updateFontSize(Math.max(currentFontSize - 0.1, 0.8)); // Limita a 0.8x o tamanho padrão
-});
-
-resetFontBtn.addEventListener('click', () => {
-    updateFontSize(1); // Reseta ao tamanho padrão
-});
-
-// Tornar menu acessível
-settingsMenu.setAttribute('aria-hidden', 'true');
-settingsMenu.addEventListener('focusout', (event) => {
-    if (!settingsMenu.contains(event.relatedTarget)) {
-        settingsMenu.setAttribute('aria-hidden', 'true');
-    }
-});
-
-// Ajusta o foco para elementos interativos
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Tab') {
-        const focusableElements = chatBox.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
-
-        if (event.shiftKey && document.activeElement === firstElement) {
-            event.preventDefault();
-            lastElement.focus();
-        } else if (!event.shiftKey && document.activeElement === lastElement) {
-            event.preventDefault();
-            firstElement.focus();
-        }
-    }
-});
-
-    // Função para atualizar o status do chat dinamicamente
-    const atualizarStatus = (status) => {
-    const chatStatus = document.getElementById('chat-status');
-
-    // Remove classes de status antigas
-    chatStatus.classList.remove('online', 'processando', 'offline');
-
-    // Adiciona a classe correspondente ao status
-    chatStatus.classList.add(status);
-
-    // Define o texto do status
-    if (status === 'online') {
-        chatStatus.textContent = 'Online';
-    } else if (status === 'processando') {
-        chatStatus.textContent = 'Processando...';
-    } else if (status === 'offline') {
-        chatStatus.textContent = 'Offline';
-    }
-};
-
-// Atualiza o status ao carregar o chat
-document.addEventListener('DOMContentLoaded', () => {
-    atualizarStatus('online'); // Define como online inicialmente
-});
-
-
-        const exibirSaudacaoInicial = () => {
-    const saudacaoTexto = "Como posso ajudá-lo hoje? Escolha uma pergunta abaixo ou digite a sua:";
-    const mensagemContainer = document.createElement('div');
-    mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
-    const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
-    const digitarPerguntas = () => {
-    const perguntasContainer = document.getElementById('predefined-questions');
-    perguntasContainer.style.display = "flex"; // Exibe o container
-    perguntasContainer.style.display = 'flex';
-    perguntasContainer.style.flexDirection = 'column';
-    perguntasContainer.style.marginTop = '-20px'; // Ajuste aqui para subir as perguntas
-    perguntasContainer.style.marginBottom = '10px'; // Mantém espaçamento inferior
-
-    const perguntas = perguntasContainer.querySelectorAll('.question-btn');
-    perguntas.forEach((button, index) => {
-        const texto = button.getAttribute('data-question');
-        button.classList.add('hidden'); // Garante que todas as perguntas comecem ocultas
-
-        // Mostra e anima cada botão após o anterior
-        setTimeout(() => {
-            button.classList.remove('hidden'); // Exibe o botão
-            button.textContent = ""; // Limpa o texto atual para animação
-
-            // Animação de digitação para o texto
-            let i = 0;
-            const interval = setInterval(() => {
-                button.textContent += texto[i];
-                i++;
-
-                if (i === texto.length) {
-                    clearInterval(interval); // Finaliza a digitação
-                }
-            }, 50); // Velocidade ajustável
-        }, index * 1500); // Atraso entre cada botão (ajustável)
-    });
-};
-
-    // Adiciona no topo da área de mensagens
-    chatMessages.insertBefore(mensagemContainer, chatMessages.firstChild);
-
-    let index = 0;
-    const interval = setInterval(() => {
-        mensagemTexto.textContent += saudacaoTexto[index];
-        index++;
-
-        if (index === saudacaoTexto.length) {
-            clearInterval(interval);
-            // Exibe as perguntas apenas após a saudação terminar
-            digitarPerguntas();
-        }
-    }, 50); // Velocidade de digitação ajustável
-};
-        
-        // Atualiza o status ao alternar o tema
-themeToggle.addEventListener('change', () => {
-    if (themeToggle.checked) {
-        chatBox.classList.add('dark-theme'); // Aplica tema escuro
-        chatBox.classList.remove('light-theme'); // Remove tema claro
-    } else {
-        chatBox.classList.add('light-theme'); // Aplica tema claro
-        chatBox.classList.remove('dark-theme'); // Remove tema escuro
-    }
-    atualizarStatus(chatStatus.textContent.toLowerCase()); // Atualiza a cor do status com base no tema ativo
-});
-        
-        // Função para simular digitação
-        function simulateTyping(message) {
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'typing-indicator';
-        typingIndicator.innerHTML = `<span></span><span></span><span></span>`;
-        chatMessages.appendChild(typingIndicator);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        setTimeout(() => {
-        chatMessages.removeChild(typingIndicator);
-
-        const botMessage = document.createElement('div');
-        botMessage.className = 'ExaBot-message';
-        botMessage.textContent = message;
-        chatMessages.appendChild(botMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 2000); // Tempo para simular a digitação
-        }
-
-        // Evento ao clicar no botão "Automático"
-        currentLanguage.addEventListener('click', () => {
-    const message = `
-        <strong>Português:</strong> Eu posso me comunicar no idioma que você escolher. Basta fazer sua pergunta no idioma desejado, e te responderei automaticamente!<br><br>
-        <strong>English:</strong> I can communicate in the language you choose. Just ask your question in the desired language, and I will respond automatically!
-    `;
-
-    // Fecha o menu de configurações
-    settingsMenu.style.display = 'none';
-
-    // Simula a digitação da mensagem no estilo do ExaBot com balão branco
-    simulateTypingWithBalloon(message);
-
-    // Foca no chat
-    chatBox.classList.add('visible');
-    chatWidget.classList.add('hidden');
-});
-
-    // Função para exibir balão com mensagens combinadas
-    function simulateTypingWithBalloon(message) {
-    const typingIndicator = document.createElement('div');
-    typingIndicator.className = 'typing-indicator';
-    typingIndicator.innerHTML = `<span></span><span></span><span></span>`;
-    chatMessages.appendChild(typingIndicator);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    setTimeout(() => {
-        chatMessages.removeChild(typingIndicator);
-
-        const botMessage = document.createElement('div');
-        botMessage.className = 'ExaBot-support-message'; // Usa o estilo do balão
-        botMessage.innerHTML = message; // Permite formatação HTML
-        chatMessages.appendChild(botMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 2000); // Tempo para simular a digitação
-}
-
-settingsGear.addEventListener('click', () => {
-    settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
-    
-
-    // Alterna entre as classes de rotação
-    if (isRotatedRight) {
-        settingsGear.classList.remove('rotate-right');
-        settingsGear.classList.add('rotate-left');
-    } else {
-        settingsGear.classList.remove('rotate-left');
-        settingsGear.classList.add('rotate-right');
-    }
-
-    isRotatedRight = !isRotatedRight; // Alterna o estado
-});
-
-// Fecha o menu de configurações ao clicar fora
-document.addEventListener('click', (event) => {
-    const isClickInsideSettingsMenu = settingsMenu.contains(event.target); // Verifica se clicou dentro do menu
-    const isClickInsideSettingsGear = settingsGear.contains(event.target); // Verifica se clicou na engrenagem
-    const isClickInsideChat = chatBox.contains(event.target); // Verifica se clicou dentro do chat
-    const isClickInsideWidget = chatWidget.contains(event.target); // Verifica se clicou no widget
-
-if (!isClickInsideChat && !isClickInsideWidget) {
-    // Fecha o chat
-    chatBox.classList.remove('visible');
-    chatWidget.classList.remove('hidden');
-
-    // Fecha o menu de ajustes se estiver aberto
-    if (settingsMenu.style.display === 'block') {
-        settingsMenu.style.display = 'none'; // Fecha os ajustes
-
-        // Garante que a engrenagem volte à posição inicial (fechada)
-        if (isRotatedRight) {
-            settingsGear.classList.remove('rotate-right');
-            settingsGear.classList.add('rotate-left');
-            isRotatedRight = false; // Atualiza o estado
-        }
-    }
-
-    // Mostra notificação se houver resposta pendente
-    if (responsePending) {
-        notification.style.display = "flex";
-    }
-}
-});
+        const currentLanguage = document.getElementById('current-language');
+        const themeToggle = document.getElementById('theme-toggle');
+        const chatStatus = document.getElementById('chat-status');
 
         let perguntasAnimadas = false;
         let responsePending = false;
         let mensagemInicialExibida = false;
-        let userScrolling = false; // Variável para controlar o estado do scroll
-        let isRotatedRight = false; // Controle da direção atual
+        let userScrolling = false; 
+        let isRotatedRight = false;
         let isAnimating = false; 
+        let currentFontSize = 1; // controle do tamanho de fonte
 
-        // Botão de minimizar, clicando "fora" do site
-    minimizeButton.addEventListener('click', () => {
-    // Fecha o chat
-    chatBox.classList.remove('visible');
-    chatWidget.classList.remove('hidden');
-
-    // Fecha o menu de ajustes se estiver aberto
-    if (settingsMenu.style.display === 'block') {
-        settingsMenu.style.display = 'none'; // Fecha o menu de ajustes
-
-        // Garante que a engrenagem volte para a posição inicial (fechada)
-        if (isRotatedRight) {
-            settingsGear.classList.remove('rotate-right');
-            settingsGear.classList.add('rotate-left');
-            isRotatedRight = false;
-        }
-    }
-
-    // Exibe notificação se houver resposta pendente
-    if (responsePending) {
-        notification.style.display = "flex";
-    }
-});
-
-        // Detecção de interação manual com o scroll
-        chatMessages.addEventListener('scroll', () => {
-        const nearBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 10;
-        userScrolling = !nearBottom; // Se estiver perto do final, o scroll é automático
+        /***************************************************************
+         *               CONTROLE DO TEMA CLARO/ESCURO
+         ***************************************************************/
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                chatBox.classList.add('dark-theme');
+                chatBox.classList.remove('light-theme');
+            } else {
+                chatBox.classList.add('light-theme');
+                chatBox.classList.remove('dark-theme');
+            }
+            // Atualiza status para forçar cor
+            atualizarStatus(chatStatus.textContent.toLowerCase());
         });
-        
-        // Acionamento automático ao carregar a página
-        const pingServer = async () => {
-            try {
-                await fetch('https://chatbot-exa.onrender.com/ping'); // Rota de "ping"
-                console.log('Servidor ativado automaticamente.');
-            } catch (error) {
-                console.error('Erro ao acionar o servidor:', error);
+
+        /***************************************************************
+         *               CONTROLE DE TAMANHO DE FONTE
+         ***************************************************************/
+        const increaseFontBtn = document.getElementById('increase-font');
+        const decreaseFontBtn = document.getElementById('decrease-font');
+        const resetFontBtn = document.getElementById('reset-font');
+
+        const updateFontSize = (sizeMultiplier) => {
+            currentFontSize = sizeMultiplier;
+            chatBox.style.fontSize = `${currentFontSize}rem`;
+            // Mantém tamanho fixo do menu
+            settingsMenu.style.fontSize = '1rem';
+        };
+        increaseFontBtn.addEventListener('click', () => {
+            updateFontSize(Math.min(currentFontSize + 0.1, 1.5));
+        });
+        decreaseFontBtn.addEventListener('click', () => {
+            updateFontSize(Math.max(currentFontSize - 0.1, 0.8));
+        });
+        resetFontBtn.addEventListener('click', () => {
+            updateFontSize(1);
+        });
+
+        /***************************************************************
+         *               FUNÇÃO DE STATUS (online, processando, offline)
+         ***************************************************************/
+        const atualizarStatus = (novoStatus) => {
+            chatStatus.classList.remove('online', 'processando', 'offline');
+            chatStatus.classList.add(novoStatus);
+
+            if (novoStatus === 'online') {
+                chatStatus.textContent = 'Online';
+            } else if (novoStatus === 'processando') {
+                chatStatus.textContent = 'Processando...';
+            } else if (novoStatus === 'offline') {
+                chatStatus.textContent = 'Offline';
             }
         };
+        // Inicia como online
+        document.addEventListener('DOMContentLoaded', () => {
+            atualizarStatus('online');
+        });
 
-        // Chama o servidor ao carregar a página (para a notificação do ExaBot)
-        window.addEventListener('load', pingServer);
+        /***************************************************************
+         *               ABRIR E FECHAR O CHAT (ANIMAÇÃO)
+         ***************************************************************/
+        function openChat() {
+            if (isAnimating || chatBox.classList.contains('visible')) return;
+            isAnimating = true;
 
-        // Alterna entre balão e chat
-                 chatWidget.addEventListener('click', async () => {
-           if  (!chatBox.classList.contains('visible')) {
-                 chatBox.classList.add('visible');
-                 chatWidget.classList.add('hidden');
+            // Remove "hidden/closing" e adiciona "visible" (animação "genie-out")
+            chatBox.classList.remove('hidden', 'closing');
+            chatBox.classList.add('visible');
 
-                 thoughtBubble.style.display = 'none';
-                 chatInput.blur();
-                 notification.style.display = "none";
-                 chatInput.focus();
-
-        // Rola automaticamente para o final se o usuário não estiver interagindo
-        if (!userScrolling) {
-            
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Ao terminar de abrir, libera a flag
+            chatBox.addEventListener('animationend', () => {
+                isAnimating = false;
+            }, { once: true });
         }
 
-                digitarPerguntas(); // Inicia a animação de digitação das perguntas
+        function minimizeChat() {
+            if (isAnimating || !chatBox.classList.contains('visible')) return;
+            isAnimating = true;
 
-                // Backup: acionar o servidor ao clicar no balão, caso ainda não tenha sido feito
+            // Sai de "visible" e entra em "closing" (genie-in)
+            chatBox.classList.remove('visible');
+            chatBox.classList.add('closing');
+
+            // Quando terminar a animação, aplicamos "hidden"
+            chatBox.addEventListener('animationend', () => {
+                chatBox.classList.remove('closing');
+                chatBox.classList.add('hidden');
+                isAnimating = false;
+
+                // Reexibe o widget
+                chatWidget.classList.remove('hidden');
+
+            }, { once: true });
+
+            // Se há resposta pendente, mostra notificação
+            if (responsePending) {
+                notification.style.display = "flex";
+            }
+        }
+
+        /***************************************************************
+         *               CLIQUE NO ÍCONE DO CHAT (widget)
+         ***************************************************************/
+        chatWidget.addEventListener('click', async () => {
+            if (!chatBox.classList.contains('visible')) {
+                // Abre o chat com animação
+                openChat();
+                // Some o widget
+                chatWidget.classList.add('hidden');
+
+                // Esconde o thought bubble, notificação
+                thoughtBubble.style.display = 'none';
+                notification.style.display = "none";
+                chatInput.focus();
+
+                // Exibir saudação inicial se não exibiu ainda
+                if (!mensagemInicialExibida) {
+                    exibirSaudacaoInicial();
+                    mensagemInicialExibida = true;
+                }
+
+                // "Acorda" servidor
                 await pingServer();
             }
         });
 
-        // Fecha os ajustes ao clicar fora do menu de configurações, mas ainda dentro do chat
-document.addEventListener('click', (event) => {
-    const isClickInsideSettingsMenu = settingsMenu.contains(event.target); // Verifica se clicou dentro do menu de ajustes
-    const isClickInsideSettingsGear = settingsGear.contains(event.target); // Verifica se clicou na engrenagem
-    const isClickInsideChat = chatBox.contains(event.target); // Verifica se clicou dentro do chat
+        /***************************************************************
+         *               BOTÃO DE MINIMIZAR
+         ***************************************************************/
+        minimizeButton.addEventListener('click', () => {
+            minimizeChat();
+            // Fecha menu de ajustes se estiver aberto
+            if (settingsMenu.style.display === 'block') {
+                settingsMenu.style.display = 'none';
+                if (isRotatedRight) {
+                    settingsGear.classList.remove('rotate-right');
+                    settingsGear.classList.add('rotate-left');
+                    isRotatedRight = false;
+                }
+            }
+        });
 
-    if (isClickInsideChat && !isClickInsideSettingsMenu && !isClickInsideSettingsGear) {
-        // Fecha o menu de ajustes se estiver aberto
-        if (settingsMenu.style.display === 'block') {
-            settingsMenu.style.display = 'none'; // Fecha os ajustes
+        /***************************************************************
+         *               FECHAR AO CLICAR FORA DO CHAT
+         ***************************************************************/
+        document.addEventListener('click', (event) => {
+            const isClickInsideSettingsMenu = settingsMenu.contains(event.target);
+            const isClickInsideSettingsGear = settingsGear.contains(event.target);
+            const isClickInsideChat = chatBox.contains(event.target);
+            const isClickInsideWidget = chatWidget.contains(event.target);
 
-            // Garante que a engrenagem volte à posição inicial (fechada)
+            // Se clicou totalmente fora e o chat está aberto, minimize
+            if (!isClickInsideChat && !isClickInsideWidget && chatBox.classList.contains('visible')) {
+                minimizeChat();
+
+                // Fecha o menu se estiver aberto
+                if (settingsMenu.style.display === 'block') {
+                    settingsMenu.style.display = 'none';
+                    if (isRotatedRight) {
+                        settingsGear.classList.remove('rotate-right');
+                        settingsGear.classList.add('rotate-left');
+                        isRotatedRight = false;
+                    }
+                }
+            }
+        });
+
+        // Também fecha ajustes se clicar dentro do chat mas fora do menu
+        document.addEventListener('click', (event) => {
+            const isClickInsideSettingsMenu = settingsMenu.contains(event.target);
+            const isClickInsideSettingsGear = settingsGear.contains(event.target);
+            const isClickInsideChat = chatBox.contains(event.target);
+
+            if (isClickInsideChat && !isClickInsideSettingsMenu && !isClickInsideSettingsGear) {
+                if (settingsMenu.style.display === 'block') {
+                    settingsMenu.style.display = 'none';
+                    if (isRotatedRight) {
+                        settingsGear.classList.remove('rotate-right');
+                        settingsGear.classList.add('rotate-left');
+                        isRotatedRight = false;
+                    }
+                }
+            }
+        });
+
+        /***************************************************************
+         *               ENGENHAGEM DO MENU DE AJUSTES
+         ***************************************************************/
+        settingsGear.addEventListener('click', () => {
+            settingsMenu.style.display = (settingsMenu.style.display === 'block') ? 'none' : 'block';
+
+            // Alterna rotação
             if (isRotatedRight) {
                 settingsGear.classList.remove('rotate-right');
                 settingsGear.classList.add('rotate-left');
-                isRotatedRight = false; // Atualiza o estado
+            } else {
+                settingsGear.classList.remove('rotate-left');
+                settingsGear.classList.add('rotate-right');
             }
-        }
-    }
-});
-
-        // Função para adicionar emojis ao lado das palavras-chave nas respostas do ExaBot
-        const adicionarEmojis = (texto) => {
-        const regras = {
-            "especialistas": "👨‍💻",
-            "trabalhando": "🔄",
-            "erro": "❌",
-            "finalizado": "✅",
-            "ajudar!": "🤝",
-            "suporte técnico": "🔧",
-            "atendimento": "🕒",
-            "endereço": "📍",
-            "disposição": "😀",
-            "opinião": "🌟"
-        };
-
-        // Substituir palavras-chave por palavra + emoji apenas nas respostas do ExaBot
-        for (const [palavra, emoji] of Object.entries(regras)) {
-            const regex = new RegExp(`\\b(${palavra})\\b`, "gi");
-            texto = texto.replace(regex, `$1 ${emoji}`);
-        }
-
-        return texto; // Texto atualizado com emojis
-    };
-
-    // Processar markdown e emojis (somente para respostas do ExaBot)
-        const processarMarkdown = (texto, tipo) => {
-        if (tipo === "ExaBot") {
-            texto = adicionarEmojis(texto); // Adiciona emojis apenas nas respostas do ExaBott
-        }
-        return texto.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-    };
-
-    // Renderiza mensagens no chat
-    const renderizarMensagem = (texto, tipo) => {
-    const mensagem = document.createElement('div');
-    mensagem.innerHTML = `<span class="${tipo}">${tipo === "user" ? "Você" : "ExaBot"}:</span> 
-        <span class="${tipo === "ExaBot" ? "ExaBot-message" : ""}">
-        ${processarMarkdown(texto, tipo)}
-        </span>`;
-    chatMessages.appendChild(mensagem);
-
-    ajustarScroll(true); // Força o ajuste do scroll após a mensagem
-};
-
-    const ajustarScroll = (forcar = false) => {
-    if (forcar || !userScrolling) {
-        setTimeout(() => {
-            chatMessages.scrollTop = chatMessages.scrollHeight; // Garante que o scroll vá até o final
-        }, 0); // Delay mínimo para sincronizar com a renderização
-    }
-};
-
-    // Exibir texto gradual com controle de scroll
-        const renderizarTextoGradual = (texto) => {
-        return new Promise((resolve) => {
-        const mensagemContainer = document.createElement('div');
-        mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
-        const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
-        chatMessages.appendChild(mensagemContainer);
-
-        let index = 0;
-        const interval = setInterval(() => {
-            mensagemTexto.innerHTML = processarMarkdown(texto.slice(0, index + 1), "ExaBot");
-            index++;
-
-            // Scroll automático apenas se o usuário não estiver visualizando mensagens antigas
-            if (!userScrolling) {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            if (index === texto.length) {
-                clearInterval(interval);
-                resolve();
-            }
-        }, 25); // Velocidade de digitação ajustada para 25ms
-    });
-    };
-    // Envia mensagens para o backend e exibe resposta gradual
-    const sendMessage = async () => {
-    const message = chatInput.value.trim();
-
-    if (message) {
-        renderizarMensagem(message, "user"); // Exibe a mensagem do usuário
-        chatInput.value = '';
-        responsePending = true;
-
-        atualizarStatus('processando'); // Mostra "Processando..." durante o envio
-
-        // Indicador de digitação (3 bolinhas)
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'typing-indicator';
-        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-        chatMessages.appendChild(typingIndicator);
-
-        // Variável para armazenar o elemento da mensagem intermediária
-        let intermediateMessage;
-
-        // Configuração do timer de 5 segundos para exibir a mensagem intermediária
-        let timer = setTimeout(async () => {
-            intermediateMessage = document.createElement('div');
-            intermediateMessage.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message">Estamos processando sua pergunta. Por favor, aguarde mais alguns instantes... 😊</span>`;
-            chatMessages.appendChild(intermediateMessage);
-
-            // Faz scroll automático, caso necessário
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 5000); // Exibe mensagem intermediária após 5 segundos
-
-        try {
-            const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensagem: message }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Falha na resposta do servidor');
-            }
-
-            const data = await response.json();
-
-            // Cancela o timer se a resposta chegar antes de 5 segundos
-            clearTimeout(timer);
-
-            // Remove o indicador de digitação
-            chatMessages.removeChild(typingIndicator);
-
-            // Adiciona animação de desaparecimento à mensagem intermediária
-            if (intermediateMessage) {
-                intermediateMessage.classList.add('desintegrando');
-                setTimeout(() => {
-                    chatMessages.removeChild(intermediateMessage);
-                }, 500); // Tempo da animação (0.5s)
-            }
-
-            // Renderiza a resposta do ExaBot
-            atualizarStatus('online'); // Volta para "Online" após receber resposta
-            await renderizarTextoGradual(data.resposta); // Exibe a resposta do ExaBot
-        } catch (error) {
-            console.error('Erro ao processar mensagem:', error);
-
-            // Cancela o timer em caso de erro
-            clearTimeout(timer);
-
-            // Remove o indicador de digitação
-            chatMessages.removeChild(typingIndicator);
-
-            // Adiciona animação de desaparecimento à mensagem intermediária
-            if (intermediateMessage) {
-                intermediateMessage.classList.add('desintegrando');
-                setTimeout(() => {
-                    chatMessages.removeChild(intermediateMessage);
-                }, 500); // Tempo da animação (0.5s)
-            }
-
-            atualizarStatus('offline'); // Define como "Offline" se houver erro
-            renderizarMensagem('Houve um problema. Tente novamente mais tarde.', 'ExaBot');
-        }
-
-        responsePending = false;
-    }
-};
-
-    sendButton.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') sendMessage();
+            isRotatedRight = !isRotatedRight;
         });
 
-        // Balão de pensamento temporário
+        /***************************************************************
+         *               FECHAR BALÃO DE PENSAMENTO
+         ***************************************************************/
         setTimeout(() => {
             if (!chatBox.classList.contains('visible')) {
                 thoughtBubble.style.display = 'block';
@@ -1428,95 +1070,171 @@ document.addEventListener('click', (event) => {
             thoughtBubble.style.display = 'none';
         });
 
-
-    // Exibe a saudação inicial ao abrir o chat pela primeira vez
-chatWidget.addEventListener('click', () => {
-    if (!mensagemInicialExibida) {
-        exibirSaudacaoInicial(); // Exibe a saudação
-        mensagemInicialExibida = true; // Garante execução única
-    }
-});
-
-// Abrir o chat com animação
-chatWidget.addEventListener('click', () => {
-    if (isAnimating || chatBox.classList.contains('visible')) return; // Evita conflitos
-
-    isAnimating = true;
-    chatBox.classList.remove('hidden', 'closing'); // Remove classes de estado antigo
-    chatBox.classList.add('visible'); // Adiciona animação de abertura
-
-    chatBox.addEventListener('animationend', () => {
-        isAnimating = false; // Finaliza a animação
-    }, { once: true });
-});
-
-
-// Minimizar o chat com animação
-const minimizeChat = () => {
-    if (isAnimating || !chatBox.classList.contains('visible')) return; // Evita conflitos
-
-    isAnimating = true;
-    chatBox.classList.remove('visible'); // Remove classe de estado visível
-    chatBox.classList.add('closing'); // Adiciona animação de fechamento
-
-    chatBox.addEventListener('animationend', () => {
-        chatBox.classList.remove('closing'); // Remove classe de animação
-        chatBox.classList.add('hidden'); // Define como escondido
-        isAnimating = false; // Finaliza a animação
-    }, { once: true });
-};
-
-// Evento para minimizar o chat ao clicar no botão de minimizar
-minimizeButton.addEventListener('click', minimizeChat);
-
-// Evento para minimizar o chat ao clicar fora dele
-document.addEventListener('click', (event) => {
-    if (
-        !chatBox.contains(event.target) && // Clicou fora do chat
-        !chatWidget.contains(event.target) && // Clicou fora do ícone do balão
-        chatBox.classList.contains('visible') // O chat está visível
-    ) {
-        minimizeChat();
-    }
-});
-
-
-
-    // Função para animar a digitação das perguntas
-    const digitarPerguntas = async () => {
-    if (perguntasAnimadas) return; // Sai da função se já foi executada
-
-    perguntasAnimadas = true; // Marca como animado
-    const perguntas = [
-        "Quais serviços a EXA oferece?",
-        "Qual seria o portfólio da EXA?",
-        "Como faço para contratar um serviço?"
-    ];
-
-    for (let index = 0; index < perguntas.length; index++) {
-        const button = questionButtons[index];
-        const texto = perguntas[index];
-        button.classList.remove('hidden'); // Exibe o botão
-        button.textContent = ""; // Limpa o texto atual
-
-        await new Promise((resolve) => {
-            let i = 0;
-            const interval = setInterval(() => {
-                button.textContent += texto[i]; // Adiciona letra por letra
-                i++;
-
-                if (i === texto.length) {
-                    clearInterval(interval); // Para a digitação quando terminar
-                    resolve(); // Prossegue para a próxima pergunta
-                }
-            }, 50); // Velocidade de digitação ajustável
+        /***************************************************************
+         *               DETECÇÃO DE SCROLL PARA NÃO FORÇAR AUTO-SCROLL
+         ***************************************************************/
+        chatMessages.addEventListener('scroll', () => {
+            const nearBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 10;
+            userScrolling = !nearBottom;
         });
-    }
-    };
 
-    // Faz os botões das perguntas pré-prontas funcionarem
-    const questionButtons = document.querySelectorAll('.question-btn');
+        /***************************************************************
+         *               ENVIO DE MENSAGEM PARA BACKEND
+         ***************************************************************/
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
 
+            // Mensagem do usuário
+            renderizarMensagem(message, "user");
+            chatInput.value = '';
+            responsePending = true;
+            atualizarStatus('processando');
+
+            // Indicador de digitação
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            chatMessages.appendChild(typingIndicator);
+
+            let intermediateMessage;
+            let timer = setTimeout(() => {
+                intermediateMessage = document.createElement('div');
+                intermediateMessage.innerHTML =
+                    `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message">Estamos processando sua pergunta. Por favor, aguarde mais alguns instantes... 😊</span>`;
+                chatMessages.appendChild(intermediateMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 5000);
+
+            try {
+                const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensagem: message })
+                });
+                if (!response.ok) throw new Error('Falha na resposta do servidor');
+
+                const data = await response.json();
+
+                clearTimeout(timer);
+                chatMessages.removeChild(typingIndicator);
+
+                // Some com a mensagem intermediária (se existir)
+                if (intermediateMessage) {
+                    intermediateMessage.classList.add('desintegrando');
+                    setTimeout(() => {
+                        chatMessages.removeChild(intermediateMessage);
+                    }, 500);
+                }
+
+                atualizarStatus('online');
+                await renderizarTextoGradual(data.resposta);
+
+            } catch (error) {
+                console.error('Erro ao processar mensagem:', error);
+
+                clearTimeout(timer);
+                chatMessages.removeChild(typingIndicator);
+
+                if (intermediateMessage) {
+                    intermediateMessage.classList.add('desintegrando');
+                    setTimeout(() => {
+                        chatMessages.removeChild(intermediateMessage);
+                    }, 500);
+                }
+                atualizarStatus('offline');
+                renderizarMensagem('Houve um problema. Tente novamente mais tarde.', 'ExaBot');
+            }
+            responsePending = false;
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') sendMessage();
+        });
+
+        /***************************************************************
+         *               RENDERIZAÇÃO DE MENSAGENS
+         ***************************************************************/
+        function renderizarMensagem(texto, tipo) {
+            const mensagem = document.createElement('div');
+            mensagem.innerHTML = `
+                <span class="${tipo}">${tipo === "user" ? "Você" : "ExaBot"}:</span>
+                <span class="${tipo === "ExaBot" ? "ExaBot-message" : ""}">
+                    ${processarMarkdown(texto, tipo)}
+                </span>`;
+            chatMessages.appendChild(mensagem);
+            ajustarScroll(true);
+        }
+
+        // Efeito digitação (ExaBot)
+        function renderizarTextoGradual(texto) {
+            return new Promise((resolve) => {
+                const mensagemContainer = document.createElement('div');
+                mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
+                const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
+                chatMessages.appendChild(mensagemContainer);
+
+                let index = 0;
+                const interval = setInterval(() => {
+                    mensagemTexto.innerHTML = processarMarkdown(texto.slice(0, index + 1), "ExaBot");
+                    index++;
+                    if (!userScrolling) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                    if (index === texto.length) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 25);
+            });
+        }
+
+        // Ajusta auto scroll
+        function ajustarScroll(forcar=false) {
+            if (forcar || !userScrolling) {
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 0);
+            }
+        }
+
+        /***************************************************************
+         *               MARKDOWN E EMOJIS
+         ***************************************************************/
+        function adicionarEmojis(texto) {
+            const regras = {
+                "especialistas": "👨‍💻",
+                "trabalhando": "🔄",
+                "erro": "❌",
+                "finalizado": "✅",
+                "ajudar!": "🤝",
+                "suporte técnico": "🔧",
+                "atendimento": "🕒",
+                "endereço": "📍",
+                "disposição": "😀",
+                "opinião": "🌟"
+            };
+            for (const [palavra, emoji] of Object.entries(regras)) {
+                const regex = new RegExp(`\\b(${palavra})\\b`, "gi");
+                texto = texto.replace(regex, `$1 ${emoji}`);
+            }
+            return texto;
+        }
+
+        function processarMarkdown(texto, tipo) {
+            // Só adiciona emojis nas respostas do ExaBot
+            if (tipo === "ExaBot") {
+                texto = adicionarEmojis(texto);
+            }
+            // Markdown: **palavra** => <b>palavra</b>
+            return texto.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+        }
+
+        /***************************************************************
+         *               PERGUNTAS PRÉ-DEFINIDAS
+         ***************************************************************/
+        const questionButtons = document.querySelectorAll('.question-btn');
         questionButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const question = button.getAttribute('data-question');
@@ -1525,12 +1243,110 @@ document.addEventListener('click', (event) => {
             });
         });
 
-        // Simulação para mudar status (personalizável conforme sua lógica)
-        setTimeout(() => atualizarStatus('processando'), 2000); // Após 2 segundos
-        setTimeout(() => atualizarStatus('online'), 5000); // Após 5 segundos
+        /***************************************************************
+         *               MENSAGEM INICIAL + ANIMAÇÃO DAS PERGUNTAS
+         ***************************************************************/
+        function exibirSaudacaoInicial() {
+            const saudacaoTexto = "Como posso ajudá-lo hoje? Escolha uma pergunta abaixo ou digite a sua:";
+            const mensagemContainer = document.createElement('div');
+            mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
+            const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
+            chatMessages.insertBefore(mensagemContainer, chatMessages.firstChild);
 
+            let index = 0;
+            const interval = setInterval(() => {
+                mensagemTexto.textContent += saudacaoTexto[index];
+                index++;
+                if (index === saudacaoTexto.length) {
+                    clearInterval(interval);
+                    digitarPerguntas(); // Inicia animação das perguntas
+                }
+            }, 50);
+        }
+
+        function digitarPerguntas() {
+            if (perguntasAnimadas) return;
+            perguntasAnimadas = true;
+
+            const perguntasContainer = document.getElementById('predefined-questions');
+            perguntasContainer.style.display = "flex"; 
+            perguntasContainer.style.flexDirection = 'column';
+            perguntasContainer.style.marginTop = '20px';
+            perguntasContainer.style.marginBottom = '10px';
+
+            const perguntas = perguntasContainer.querySelectorAll('.question-btn');
+            perguntas.forEach((button, index) => {
+                const texto = button.getAttribute('data-question');
+                button.classList.add('hidden'); 
+
+                // Mostra e anima cada botão
+                setTimeout(() => {
+                    button.classList.remove('hidden');
+                    button.textContent = "";
+                    let i = 0;
+                    const interval = setInterval(() => {
+                        button.textContent += texto[i];
+                        i++;
+                        if (i === texto.length) {
+                            clearInterval(interval);
+                        }
+                    }, 50);
+                }, index * 1500); 
+            });
+        }
+
+        /***************************************************************
+         *               BOTÃO "AUTOMÁTICO" (IDIOMA)
+         ***************************************************************/
+        currentLanguage.addEventListener('click', () => {
+            const message = `
+                <strong>Português:</strong> Eu posso me comunicar no idioma que você escolher. Basta fazer sua pergunta no idioma desejado, e te responderei automaticamente!<br><br>
+                <strong>English:</strong> I can communicate in the language you choose. Just ask your question in the desired language, and I will respond automatically!
+            `;
+            // Fecha menu
+            settingsMenu.style.display = 'none';
+            // Simula digitação da mensagem no estilo ExaBot
+            simulateTypingWithBalloon(message);
+            // Mostra chat
+            if (!chatBox.classList.contains('visible')) {
+                openChat();
+                chatWidget.classList.add('hidden');
+            }
+        });
+
+        function simulateTypingWithBalloon(message) {
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            setTimeout(() => {
+                chatMessages.removeChild(typingIndicator);
+
+                const botMessage = document.createElement('div');
+                botMessage.className = 'ExaBot-support-message';
+                botMessage.innerHTML = message;
+                chatMessages.appendChild(botMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 2000);
+        }
+
+        /***************************************************************
+         *               "PING" NO SERVIDOR
+         ***************************************************************/
+        async function pingServer() {
+            try {
+                await fetch('https://chatbot-exa.onrender.com/ping');
+                console.log('Servidor ativado automaticamente.');
+            } catch (error) {
+                console.error('Erro ao acionar o servidor:', error);
+            }
+        }
+
+        // Exemplos de mudança de status
+        setTimeout(() => atualizarStatus('processando'), 2000);
+        setTimeout(() => atualizarStatus('online'), 5000);
     </script>
 </body>
-
 </html>
-
