@@ -36,7 +36,7 @@
         }
 
         /* Adicionando as animações de minimizar e expandir */
-@keyframes genie-in {
+        @keyframes genie-in {
     0% {
         transform: scale(1) translate(0, 0);
         opacity: 1;
@@ -60,18 +60,19 @@
 
 /* Aplicando estilos para o chat durante a animação */
 #chat-box {
-    transform-origin: bottom right;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform-origin: bottom right; /* Origem da animação */
+    transition: transform 0.3s ease, opacity 0.3s ease; /* Suavidade nas transformações */
 }
 
-#chat-box.hidden {
-    animation: genie-in 0.3s forwards;
-}
-
+/* Animação de expandir */
 #chat-box.visible {
     animation: genie-out 0.3s forwards;
 }
 
+/* Animação de retroceder */
+#chat-box.closing {
+    animation: genie-in 0.3s forwards;
+}
 
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% {
@@ -120,28 +121,28 @@
         }
 
         #chat-box {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 330px;
-            height: 600px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            display: none;
-            flex-direction: column;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            overflow: hidden; /* Remove qualquer conteúdo que "escorregue" pelas bordas */
-        }
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 330px;
+    height: 600px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: scale(0);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
 
-        #chat-box.visible {
-            display: flex;
-            opacity: 1;
-            transform: scale(1);
-        }
+#chat-box.visible {
+    opacity: 1;
+    transform: scale(1);
+    animation: genie-out 0.3s forwards;
+}
 
         #chat-box-header {
             background-color: #314b73;
@@ -277,7 +278,7 @@
     font-size: 0.9rem; /* Ajusta o tamanho da fonte nos botões */
 
     /* Estilo para os botões menores e juntos */
-#settings-menu .settings-item button {
+    #settings-menu .settings-item button {
     padding: 5px 10px; /* Reduz o tamanho interno dos botões */
     font-size: 0.8rem; /* Deixa a fonte menor */
     margin: 0; /* Remove espaçamento externo dos botões */
@@ -1436,40 +1437,39 @@ chatWidget.addEventListener('click', () => {
     }
 });
 
-// Alterna o estado do chat ao clicar no ícone do balão
+// Abrir o chat com animação
 chatWidget.addEventListener('click', () => {
-    if (isAnimating) return; // Evita conflitos de animação
+    if (isAnimating || chatBox.classList.contains('visible')) return; // Evita conflitos
 
-    if (!chatBox.classList.contains('visible')) {
-        // Abrir o chat
-        isAnimating = true;
-        chatBox.classList.remove('hidden');
-        chatBox.classList.add('visible'); // Adiciona animação de abertura
-        chatBox.addEventListener('animationend', () => {
-            isAnimating = false;
-        }, { once: true });
-    }
+    isAnimating = true;
+    chatBox.classList.remove('hidden', 'closing'); // Remove classes de estado antigo
+    chatBox.classList.add('visible'); // Adiciona animação de abertura
+
+    chatBox.addEventListener('animationend', () => {
+        isAnimating = false; // Finaliza a animação
+    }, { once: true });
 });
 
-// Função para minimizar o chat
-const minimizeChat = () => {
-    if (isAnimating) return; // Evita conflitos de animação
 
-    if (chatBox.classList.contains('visible')) {
-        // Minimizar o chat
-        isAnimating = true;
-        chatBox.classList.remove('visible');
-        chatBox.classList.add('hidden'); // Adiciona animação de fechamento
-        chatBox.addEventListener('animationend', () => {
-            isAnimating = false;
-        }, { once: true });
-    }
+// Minimizar o chat com animação
+const minimizeChat = () => {
+    if (isAnimating || !chatBox.classList.contains('visible')) return; // Evita conflitos
+
+    isAnimating = true;
+    chatBox.classList.remove('visible'); // Remove classe de estado visível
+    chatBox.classList.add('closing'); // Adiciona animação de fechamento
+
+    chatBox.addEventListener('animationend', () => {
+        chatBox.classList.remove('closing'); // Remove classe de animação
+        chatBox.classList.add('hidden'); // Define como escondido
+        isAnimating = false; // Finaliza a animação
+    }, { once: true });
 };
 
 // Evento para minimizar o chat ao clicar no botão de minimizar
 minimizeButton.addEventListener('click', minimizeChat);
 
-// Evento para minimizar o chat ao clicar fora do chat
+// Evento para minimizar o chat ao clicar fora dele
 document.addEventListener('click', (event) => {
     if (
         !chatBox.contains(event.target) && // Clicou fora do chat
@@ -1479,6 +1479,8 @@ document.addEventListener('click', (event) => {
         minimizeChat();
     }
 });
+
+
 
     // Função para animar a digitação das perguntas
     const digitarPerguntas = async () => {
