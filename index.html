@@ -14,8 +14,8 @@
         ---------------------------------------------------------- */
         #chat-widget {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 60px;
+            right: 5px;
             width: 60px;
             height: 60px;
             background-color: #005bb5;
@@ -88,8 +88,8 @@
         ---------------------------------------------------------- */
         #chat-box {
             position: fixed;
-            bottom: 100px;
-            right: 20px;
+            bottom: 120px;
+            right:20px;
             width: 330px;
             height: 600px;
             background-color: #f9f9f9;
@@ -450,15 +450,15 @@
         ---------------------------------------------------------- */
         #thought-bubble {
             position: fixed;
-            bottom: 90px;
-            right: 25px;
+            bottom: 125px;
+            right: 50px;
             background: white;
             border: 1px solid #ccc;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
             padding: 10px 15px;
             max-width: 250px;
-            font-size: 14px;
+            font-size: 16px;
             display: none;
             animation: fadeIn 0.5s ease;
         }
@@ -968,7 +968,7 @@
                 // Esconde o thought bubble, notificação
                 thoughtBubble.style.display = 'none';
                 notification.style.display = "none";
-                chatInput.focus();
+                // chatInput.focus(); //Se quiser focar no chat
 
                 // Exibir saudação inicial se não exibiu ainda
                 if (!mensagemInicialExibida) {
