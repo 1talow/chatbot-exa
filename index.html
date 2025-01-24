@@ -901,44 +901,133 @@
         const currentLanguage = document.getElementById('current-language');
         const themeToggle = document.getElementById('theme-toggle');
         const chatStatus = document.getElementById('chat-status');
-        const chatStatusText = document.querySelector('#status-text');
-        const ttsButton = document.getElementById('tts-toggle-button');
+        
+        /***************************************************************
+        *               CONTROLE DO TTS (Texto para Fala)
+        ***************************************************************/
+// Referência ao botão de TTS
+const ttsButton = document.getElementById('tts-toggle-button');
+let ttsEnabled = false; // Estado inicial do TTS (desativado)
 
+// Evento de clique no botão de TTS
+ttsButton.addEventListener('click', (event) => {
+    event.stopPropagation(); // Evita conflitos ao clicar em outros elementos
+    ttsEnabled = !ttsEnabled; // Alterna o estado do TTS
+    atualizarBotaoTTS(); // Atualiza o ícone do botão
 
-        let ttsEnabled = false; // Estado inicial do TTS (desligado)
-
-        // Evento de clique no botão
-        ttsButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Impede que o clique se propague para outros elementos
-        ttsEnabled = !ttsEnabled; // Alterna o estado do TTS
-        atualizarBotaoTTS(); // Atualiza o visual do botão
-
-        if (ttsEnabled) {
-        console.log('TTS ativado!');
-        // Aqui chamaremos a função que inicia o TTS (ainda vamos integrar com Google)
-        } else {
+    if (!ttsEnabled) {
+        pararFala(); // Interrompe qualquer fala em andamento ao desativar o TTS
         console.log('TTS desativado!');
-        }
-        });
+    } else {
+        console.log('TTS ativado!');
+        // As mensagens futuras serão lidas automaticamente
+    }
+});
 
-
-        // Função para atualizar o visual do botão
-        function atualizarBotaoTTS() {
-        if (ttsEnabled) {
+// Função para atualizar o ícone do botão de TTS
+function atualizarBotaoTTS() {
+    if (ttsEnabled) {
         ttsButton.classList.remove('off');
         ttsButton.classList.add('on');
         ttsButton.innerHTML = '<i class="fas fa-volume-up"></i>'; // Ícone de som ligado
-        } else {
+    } else {
         ttsButton.classList.remove('on');
         ttsButton.classList.add('off');
         ttsButton.innerHTML = '<i class="fas fa-volume-mute"></i>'; // Ícone de som desligado
-        }
-        }
+    }
+}
+
+// Inicializa o botão como desligado
+atualizarBotaoTTS();
+
+// Função para detectar o idioma automaticamente com prioridade para pt-BR
+function detectarIdioma(texto) {
+    if (/[\u4E00-\u9FFF]/.test(texto)) return 'zh-CN'; // Chinês Simplificado
+    if (/^[a-zA-Z0-9\s,.!?]+$/.test(texto)) return 'en-US'; // Inglês
+    return 'pt-BR'; // Padrão: Português
+}
+
+// Função para limpar o texto e remover caracteres indesejados
+function limparTextoParaFala(texto) {
+    // Remove caracteres como * e - que não devem ser lidos pelo TTS
+    texto = texto.replace(/[\*\-]/g, ''); // Remove * e -
+    // Garante que pontos e vírgulas sejam seguidos por espaços para pausas naturais
+    texto = texto.replace(/\.(?!\s)/g, '. '); // Garante espaço após ponto
+    texto = texto.replace(/,(?!\s)/g, ', '); // Garante espaço após vírgula
+    texto = texto.replace(/\s+/g, ' '); // Substitui múltiplos espaços por um único
+    return texto.trim(); // Remove espaços desnecessários no início e fim
+}
+
+// Função para iniciar a fala com velocidade ajustada para pt-BR
+function iniciarFala(texto) {
+    if (!ttsEnabled || !('speechSynthesis' in window)) return; // Verifica se o TTS está ativado ou suportado
+
+    const textoLimpo = limparTextoParaFala(texto); // Limpa o texto antes de falar
+    const idiomaDetectado = detectarIdioma(textoLimpo);
 
 
-        // Inicializa o botão como desligado
-        atualizarBotaoTTS();
+    // Cria o objeto de fala
+    const utterance = new SpeechSynthesisUtterance(textoLimpo);
+    utterance.lang = idiomaDetectado;
 
+    // Ajusta a velocidade com base no idioma
+    if (idiomaDetectado === 'pt-BR') {
+        utterance.rate = 1.9; // Velocidade aumentada para Português
+    } else {
+        utterance.rate = 1; // Velocidade padrão para outros idiomas
+    }
+
+    utterance.pitch = 1; // Tom da fala
+
+    // Fala o texto no idioma detectado
+    console.log(`Falando no idioma: ${idiomaDetectado} com velocidade: ${utterance.rate}`);
+    window.speechSynthesis.speak(utterance);
+}
+
+
+// Testes de exemplo
+iniciarFala("Olá, como você está?"); // Deve falar em Português
+iniciarFala("Hello, how are you?"); // Deve falar em Inglês
+iniciarFala("你好"); // Deve falar em Chinês
+iniciarFala("**Oi! Tudo bem?**"); // Deve falar sem os ** e respeitar a pontuação
+
+    pararFala(); // Cancela qualquer fala anterior para evitar sobreposição
+
+// Função para filtrar o texto antes de enviar para o TTS
+function filtrarTextoParaTTS(texto) {
+    // Remove os símbolos de Markdown de negrito (**)
+    texto = texto.replace(/\*\*(.*?)\*\*/g, '$1');
+
+    // Remove emojis (substitui por espaço para evitar "palavras grudadas")
+    texto = texto.replace(/\p{Emoji}/gu, ' ');
+
+    // Remove símbolos de pontuação desnecessários para fala
+    texto = texto.replace(/[!?#]/g, '');
+
+    // Ajusta entonação para perguntas ou afirmações
+    if (texto.trim().endsWith('?')) {
+        texto = `Pergunta: ${texto}`; // Adiciona um prefixo para enfatizar perguntas
+    } else if (texto.trim().endsWith('!')) {
+        texto = `Atenção: ${texto}`; // Adiciona um prefixo para afirmações enfáticas
+    }
+
+    return texto.trim();
+}
+
+
+// Função para parar qualquer fala em andamento
+function pararFala() {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Cancela todas as falas
+    }
+}
+
+/***************************************************************
+ *               EXEMPLO DE INTEGRAÇÃO COM STATUS
+ ***************************************************************/
+// Exemplo: Atualiza o texto do status para "Processando..."
+const chatStatusText = document.querySelector('#status-text');
+chatStatusText.textContent = "Processando..."; // Simples atualização de texto
 
 
 
@@ -967,8 +1056,12 @@
                 chatBox.classList.remove('dark-theme');
             }
             // Atualiza status para forçar cor
-            atualizarStatus(chatStatus.textContent.toLowerCase());
-        });
+            atualizarEstiloStatus(); // Atualiza o estilo do status ao mudar de tema
+});
+
+
+
+
 
         /***************************************************************
          *               CONTROLE DE TAMANHO DE FONTE
@@ -1102,18 +1195,42 @@
         /***************************************************************
          *               BOTÃO DE MINIMIZAR
          ***************************************************************/
-        minimizeButton.addEventListener('click', () => {
-            minimizeChat();
-            // Fecha menu de ajustes se estiver aberto
-            if (settingsMenu.style.display === 'block') {
-                settingsMenu.style.display = 'none';
-                if (isRotatedRight) {
-                    settingsGear.classList.remove('rotate-right');
-                    settingsGear.classList.add('rotate-left');
-                    isRotatedRight = false;
-                }
-            }
-        });
+         minimizeButton.addEventListener('click', () => {
+    minimizeChat();
+    desligarTTS(); // Desliga o TTS ao minimizar
+
+    // Fecha menu de ajustes se estiver aberto
+    if (settingsMenu.style.display === 'block') {
+        settingsMenu.style.display = 'none';
+        if (isRotatedRight) {
+            settingsGear.classList.remove('rotate-right');
+            settingsGear.classList.add('rotate-left');
+            isRotatedRight = false;
+        }
+    }
+});
+
+// Adicione essa função ao evento de minimizar ou fechar o chat
+function desligarTTS() {
+    if (ttsEnabled) {
+        ttsEnabled = false; // Desativa o TTS
+        atualizarBotaoTTS(); // Atualiza o estado visual do botão
+        pararFala(); // Cancela qualquer fala em andamento
+        console.log('TTS desativado ao fechar/minimizar o chat.');
+    }
+}
+
+// Se desejar, aplique também ao fechar o chat via outros métodos (ex.: clique fora)
+document.addEventListener('click', (event) => {
+    const isClickInsideChat = chatBox.contains(event.target);
+    const isClickInsideWidget = chatWidget.contains(event.target);
+
+    // Se clicou fora do chat e o chat está aberto, minimize e desliga o TTS
+    if (!isClickInsideChat && !isClickInsideWidget && chatBox.classList.contains('visible')) {
+        minimizeChat();
+        desligarTTS(); // Desliga o TTS ao fechar clicando fora
+    }
+});
 
         /***************************************************************
          *               FECHAR AO CLICAR FORA DO CHAT
@@ -1285,28 +1402,36 @@
             ajustarScroll(true);
         }
 
-        // Efeito digitação (ExaBot)
-        function renderizarTextoGradual(texto) {
-            return new Promise((resolve) => {
-                const mensagemContainer = document.createElement('div');
-                mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
-                const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
-                chatMessages.appendChild(mensagemContainer);
+        // Efeito de digitação com TTS
+function renderizarTextoGradual(texto) {
+    return new Promise((resolve) => {
+        const mensagemContainer = document.createElement('div');
+        mensagemContainer.innerHTML = `<span class="ExaBot">ExaBot:</span> <span class="ExaBot-message"></span>`;
+        const mensagemTexto = mensagemContainer.querySelector('.ExaBot-message');
+        chatMessages.appendChild(mensagemContainer);
 
-                let index = 0;
-                const interval = setInterval(() => {
-                    mensagemTexto.innerHTML = processarMarkdown(texto.slice(0, index + 1), "ExaBot");
-                    index++;
-                    if (!userScrolling) {
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                    }
-                    if (index === texto.length) {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 25);
-            });
-        }
+        let index = 0;
+        const interval = setInterval(() => {
+            const currentText = texto.slice(0, index + 1);
+            mensagemTexto.innerHTML = processarMarkdown(currentText, "ExaBot");
+            
+            // Inicia o TTS durante a exibição
+            if (ttsEnabled && index === 0) {
+                iniciarFala(texto); // Lê o texto completo no início
+            }
+
+            index++;
+            if (!userScrolling) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            if (index === texto.length) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 25); // Velocidade da digitação
+    });
+}
+
 
         // Ajusta auto scroll
         function ajustarScroll(forcar=false) {
