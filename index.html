@@ -188,13 +188,62 @@
            STATUS FIXO
         ---------------------------------------------------------- */
         #chat-status {
-            text-align: center;
-            font-size: 14px;
-            color: #28a745; /* cor verde (online) */
-            padding: 5px 0;
-            background: #f1f1f1;
-            border-bottom: 1px solid #ccc;
-        }
+    position: relative; /* Permite manipular posições internas */
+    font-size: 14px;
+    padding: 8px 0; /* Espaçamento interno para aumentar a altura */
+    background: #f1f1f1;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+    min-height: 20px; /* Garante uma altura mínima */
+}
+
+#status-text {
+    position: absolute;
+    left: 50%; /* Centraliza no meio horizontalmente */
+    transform: translateX(-50%); /* Ajusta para ficar centralizado de verdade */
+    z-index: 1; /* Garante que fique acima de outros elementos */
+}
+
+/* Cores para os status */
+#status-text.online {
+    color: #28a745; /* Verde para online */
+}
+
+#status-text.processando {
+    color: #ffa500; /* Amarelo para processando */
+}
+
+#status-text.offline {
+    color: #dc3545; /* Vermelho para offline */
+}
+
+#tts-toggle-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #ccc; /* Cinza inicial para estado desligado */
+    z-index: 2;
+    transition: color 0.3s ease; /* Suaviza a troca de cor */
+}
+
+#tts-toggle-button.on {
+    color: #28a745; /* Verde para estado ligado */
+}
+
+#tts-toggle-button.off {
+    color: #ccc; /* Cinza para estado desligado */
+}
+
+#tts-toggle-button.off i {
+    content: "\f6a9"; /* Ícone de mudo (fa-volume-mute) */
+}
+
+
 
         /* Diferentes status e suas cores */
         #chat-box.light-theme #chat-status.online {
@@ -790,7 +839,13 @@
         </div>
 
         <!-- Status fixo -->
-        <div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0;">Online</div>
+        <div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0; display: flex; align-items: center; justify-content: space-between;">
+            <span id="status-text" style="margin-right: auto;">Online</span>
+            <button id="tts-toggle-button" title="Ativar/Desativar TTS" aria-label="Ativar/Desativar TTS" style="background-color: transparent; border: none; color: #ccc; cursor: pointer; font-size: 18px;">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>        
+        
         
         <!-- Menu de Configurações -->
         <div id="settings-menu" aria-hidden="true" role="dialog" aria-label="Menu de Configurações">
@@ -846,6 +901,51 @@
         const currentLanguage = document.getElementById('current-language');
         const themeToggle = document.getElementById('theme-toggle');
         const chatStatus = document.getElementById('chat-status');
+        const chatStatusText = document.querySelector('#status-text');
+        const ttsButton = document.getElementById('tts-toggle-button');
+
+
+        let ttsEnabled = false; // Estado inicial do TTS (desligado)
+
+        // Evento de clique no botão
+        ttsButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Impede que o clique se propague para outros elementos
+        ttsEnabled = !ttsEnabled; // Alterna o estado do TTS
+        atualizarBotaoTTS(); // Atualiza o visual do botão
+
+        if (ttsEnabled) {
+        console.log('TTS ativado!');
+        // Aqui chamaremos a função que inicia o TTS (ainda vamos integrar com Google)
+        } else {
+        console.log('TTS desativado!');
+        }
+        });
+
+
+        // Função para atualizar o visual do botão
+        function atualizarBotaoTTS() {
+        if (ttsEnabled) {
+        ttsButton.classList.remove('off');
+        ttsButton.classList.add('on');
+        ttsButton.innerHTML = '<i class="fas fa-volume-up"></i>'; // Ícone de som ligado
+        } else {
+        ttsButton.classList.remove('on');
+        ttsButton.classList.add('off');
+        ttsButton.innerHTML = '<i class="fas fa-volume-mute"></i>'; // Ícone de som desligado
+        }
+        }
+
+
+        // Inicializa o botão como desligado
+        atualizarBotaoTTS();
+
+
+
+
+        // Exemplo de atualização do status
+        chatStatusText.textContent = "Processando..."; // Atualiza apenas o texto
+
+
 
         let perguntasAnimadas = false;
         let responsePending = false;
@@ -896,17 +996,18 @@
         /***************************************************************
          *               FUNÇÃO DE STATUS (online, processando, offline)
          ***************************************************************/
-        const atualizarStatus = (novoStatus) => {
-            chatStatus.classList.remove('online', 'processando', 'offline');
-            chatStatus.classList.add(novoStatus);
+         const atualizarStatus = (novoStatus) => {
+         const statusText = document.querySelector('#status-text'); // Seleciona o span do texto do status
+         chatStatus.classList.remove('online', 'processando', 'offline');
+         chatStatus.classList.add(novoStatus);
 
-            if (novoStatus === 'online') {
-                chatStatus.textContent = 'Online';
-            } else if (novoStatus === 'processando') {
-                chatStatus.textContent = 'Processando...';
-            } else if (novoStatus === 'offline') {
-                chatStatus.textContent = 'Offline';
-            }
+        if (novoStatus === 'online') {
+        statusText.textContent = 'Online';
+        } else if (novoStatus === 'processando') {
+        statusText.textContent = 'Processando...';
+        } else if (novoStatus === 'offline') {
+        statusText.textContent = 'Offline';
+        }
         };
         // Inicia como online
         document.addEventListener('DOMContentLoaded', () => {
