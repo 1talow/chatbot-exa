@@ -1083,6 +1083,23 @@
         });
 
         /***************************************************************
+        *               "PING" NO SERVIDOR AO CARREGAR
+        ***************************************************************/
+        document.addEventListener('DOMContentLoaded', async () => {
+        // Atualiza o status para "processando" enquanto o servidor é ativado
+        atualizarStatus('processando');
+
+        try {
+            await pingServer(); // Aciona o servidor ao carregar a página
+            console.log('Servidor ativado automaticamente ao carregar a página.');
+            atualizarStatus('online'); // Atualiza o status para "online"
+        } catch (error) {
+            console.error('Erro ao acionar o servidor automaticamente:', error);
+            atualizarStatus('offline'); // Atualiza o status para "offline" em caso de erro
+        }
+        });
+
+        /***************************************************************
          *               BOTÃO DE MINIMIZAR
          ***************************************************************/
         minimizeButton.addEventListener('click', () => {
