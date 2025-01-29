@@ -128,7 +128,7 @@ Exceto em situações de saudações, como "Olá", "Oi", agradecimentos ou despe
                     },
                     { role: 'user', content: mensagem }
                 ],
-                max_tokens: 350,
+                max_tokens: 400,
                 temperature: 0.6
             })
         });
