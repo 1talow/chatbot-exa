@@ -1125,29 +1125,37 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
         }
 
         function minimizeChat() {
-            if (isAnimating || !chatBox.classList.contains('visible')) return;
-            isAnimating = true;
+    if (isAnimating || !chatBox.classList.contains('visible')) return;
+    isAnimating = true;
 
-            // Sai de "visible" e entra em "closing" (genie-in)
-            chatBox.classList.remove('visible');
-            chatBox.classList.add('closing');
+    // Sai de "visible" e entra em "closing" (genie-in)
+    chatBox.classList.remove('visible');
+    chatBox.classList.add('closing');
 
-            // Quando terminar a animação, aplicamos "hidden"
-            chatBox.addEventListener('animationend', () => {
-                chatBox.classList.remove('closing');
-                chatBox.classList.add('hidden');
-                isAnimating = false;
+    // Quando terminar a animação, aplicamos "hidden"
+    chatBox.addEventListener('animationend', () => {
+        chatBox.classList.remove('closing');
+        chatBox.classList.add('hidden');
+        isAnimating = false;
 
-                // Reexibe o widget
-                chatWidget.classList.remove('hidden');
+        // Reexibe o widget
+        chatWidget.classList.remove('hidden');
 
-            }, { once: true });
-
-            // Se há resposta pendente, mostra notificação
-            if (responsePending) {
-                notification.style.display = "flex";
-            }
+        // **Fecha o menu de configurações ao minimizar o chat**
+        if (settingsMenu.style.display === 'block') {
+            settingsMenu.style.display = 'none';
+            settingsGear.classList.remove('rotate-right');
+            settingsGear.classList.add('rotate-left');
+            isRotatedRight = false;
         }
+    }, { once: true });
+
+    // Se há resposta pendente, mostra notificação
+    if (responsePending) {
+        notification.style.display = "flex";
+    }
+}
+
 
         /***************************************************************
          *               CLIQUE NO ÍCONE DO CHAT (widget)
@@ -1199,16 +1207,16 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
     minimizeChat();
     desligarTTS(); // Desliga o TTS ao minimizar
 
-    // Fecha menu de ajustes se estiver aberto
+    // Fecha o menu de configurações ao minimizar
     if (settingsMenu.style.display === 'block') {
         settingsMenu.style.display = 'none';
-        if (isRotatedRight) {
-            settingsGear.classList.remove('rotate-right');
-            settingsGear.classList.add('rotate-left');
-            isRotatedRight = false;
-        }
+        settingsGear.classList.remove('rotate-right');
+        settingsGear.classList.add('rotate-left');
+        isRotatedRight = false;
     }
 });
+
+
 
 // Adicione essa função ao evento de minimizar ou fechar o chat
 function desligarTTS() {
@@ -1224,9 +1232,11 @@ function desligarTTS() {
 document.addEventListener('click', (event) => {
     const isClickInsideChat = chatBox.contains(event.target);
     const isClickInsideWidget = chatWidget.contains(event.target);
+    const isClickInsideSettingsMenu = settingsMenu.contains(event.target);
+    const isClickInsideSettingsGear = settingsGear.contains(event.target);
 
     // Se clicou fora do chat e o chat está aberto, minimize e desliga o TTS
-    if (!isClickInsideChat && !isClickInsideWidget && chatBox.classList.contains('visible')) {
+    if (!isClickInsideChat && !isClickInsideWidget) {
         minimizeChat();
         desligarTTS(); // Desliga o TTS ao fechar clicando fora
     }
@@ -1235,27 +1245,26 @@ document.addEventListener('click', (event) => {
         /***************************************************************
          *               FECHAR AO CLICAR FORA DO CHAT
          ***************************************************************/
-        document.addEventListener('click', (event) => {
-            const isClickInsideSettingsMenu = settingsMenu.contains(event.target);
-            const isClickInsideSettingsGear = settingsGear.contains(event.target);
-            const isClickInsideChat = chatBox.contains(event.target);
-            const isClickInsideWidget = chatWidget.contains(event.target);
+         document.addEventListener('click', (event) => {
+    const isClickInsideChat = chatBox.contains(event.target);
+    const isClickInsideWidget = chatWidget.contains(event.target);
+    const isClickInsideSettingsMenu = settingsMenu.contains(event.target);
+    const isClickInsideSettingsGear = settingsGear.contains(event.target);
 
-            // Se clicou totalmente fora e o chat está aberto, minimize
-            if (!isClickInsideChat && !isClickInsideWidget && chatBox.classList.contains('visible')) {
-                minimizeChat();
+    // Se clicou fora do chat e o chat está aberto, minimize e desliga o TTS
+    if (!isClickInsideChat && !isClickInsideWidget) {
+        minimizeChat();
+        desligarTTS(); // Desliga o TTS ao fechar clicando fora
 
-                // Fecha o menu se estiver aberto
-                if (settingsMenu.style.display === 'block') {
-                    settingsMenu.style.display = 'none';
-                    if (isRotatedRight) {
-                        settingsGear.classList.remove('rotate-right');
-                        settingsGear.classList.add('rotate-left');
-                        isRotatedRight = false;
-                    }
-                }
-            }
-        });
+        // **Fecha o menu de configurações ao minimizar**
+        if (settingsMenu.style.display === 'block') {
+            settingsMenu.style.display = 'none';
+            settingsGear.classList.remove('rotate-right');
+            settingsGear.classList.add('rotate-left');
+            isRotatedRight = false;
+        }
+    }
+});
 
         // Também fecha ajustes se clicar dentro do chat mas fora do menu
         document.addEventListener('click', (event) => {
