@@ -591,53 +591,39 @@
         }
 
         /* ----------------------------------------------------------
-           RESPONSIVIDADE
-        ---------------------------------------------------------- */
-        @media (max-width: 768px) {
-            #chat-box {
-                width: 90%;
-                bottom: 20px;
-                right: 5%;
-                height: 60%;
-            }
-            #chat-widget {
-                bottom: 10px;
-                right: 10px;
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-            #thought-bubble {
-                bottom: 70px;
-                right: 10px;
-                max-width: 200px;
-                font-size: 12px;
-            }
-            #chat-box-header {
-                font-size: 16px;
-            }
-            .question-btn {
-                font-size: 14px;
-                padding: 10px;
-            }
-        }
-        @media (max-width: 480px) {
-            #chat-box {
-                height: 50%;
-            }
-            #chat-widget {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-            }
-            #thought-bubble {
-                font-size: 10px;
-            }
-            .question-btn {
-                font-size: 12px;
-                padding: 8px;
-            }
-        }
+   RESPONSIVIDADE - Ajuste para smartphones
+---------------------------------------------------------- */
+@media (max-width: 768px) {
+    #chat-box {
+        width: 90vw; /* Ocupa 90% da largura da tela */
+        height: 80vh; /* Agora ocupa 80% da altura da tela */
+        bottom: 10px;
+        right: 5%;
+        max-width: 400px; /* Máximo de 400px para não ficar exagerado */
+        border-radius: 15px; /* Bordas arredondadas para um visual mais moderno */
+    }
+
+    #chat-box-messages {
+        height: 65vh; /* Ajusta a área de mensagens */
+        padding: 10px;
+    }
+
+    #chat-input {
+        font-size: 16px; /* Fonte maior para facilitar a digitação */
+    }
+
+    #action-button {
+        font-size: 14px;
+        padding: 12px; /* Aumenta a área de toque para maior conforto */
+    }
+}
+
+/* Ajuste para telas menores ainda (exemplo: smartphones pequenos) */
+@media (max-width: 480px) {
+    #chat-box {
+        height: 85vh; /* Aumenta um pouco mais a altura em telas muito pequenas */
+    }
+}
 
         /* ----------------------------------------------------------
            TEMA CLARO E ESCURO
