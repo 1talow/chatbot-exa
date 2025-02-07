@@ -890,8 +890,6 @@
         const actionButton = document.getElementById('action-button');
         
         
-
-       
 /**************************************************************************************************************************** 
  *        ATUALIZA O BOTÃO PARA "LIMPAR" AO APAGAR TUDO (APÓS 2ª MSG)/ ADICIONANDO DELAY DE 200ms NA TROCA PARA "ENVIAR"
  ****************************************************************************************************************************/
@@ -924,6 +922,19 @@ chatInput.addEventListener('input', () => {
     if (!chatInput.value.trim() && mensagensUsuario.length > 0) {
         actionButton.textContent = "Limpar";
         actionButton.setAttribute("data-action", "clear");
+    }
+});
+
+/*************************************************************** 
+ *     AJUSTE DO CHATBOT QUANDO O TECLADO VIRTUAL ABRE (MOBILE)
+ ***************************************************************/
+ window.addEventListener('resize', () => {
+    const isMobile = window.innerWidth <= 768;
+    const chatBox = document.getElementById('chat-box');
+
+    if (isMobile) {
+        const viewportHeight = window.innerHeight;
+        chatBox.style.height = `${viewportHeight * 0.75}px`; // Ajusta a altura para 75% do espaço disponível
     }
 });
 
