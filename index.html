@@ -560,35 +560,49 @@
         }
 
         /* ----------------------------------------------------------
-           PERGUNTAS PRÉ-DEFINIDAS
-        ---------------------------------------------------------- */
-        #predefined-questions {
-            display: none;
-            flex-direction: column;
-            margin-bottom: 10px;
-        }
-        .question-btn {
-            background-color: #314b73;
-            color: white;
-            border: 2px solid #25344f;
-            border-radius: 15px 15px 15px 0;
-            padding: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 15px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px black;
-            position: relative;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-        }
-        .question-btn.hidden {
-            visibility: hidden;
-        }
-        .question-btn:hover {
-            background-color: #1e3554;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
-        }
+   PERGUNTAS PRÉ-DEFINIDAS - ANIMAÇÃO IGUAL ÀS DINÂMICAS
+---------------------------------------------------------- */
+#predefined-questions {
+    display: none;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+/* 🔹 Configuração inicial das perguntas pré-definidas */
+.question-btn {
+    background-color: #314b73;
+    color: white;
+    border: 2px solid #25344f;
+    border-radius: 15px 15px 15px 0;
+    padding: 12px;
+    margin: 5px 0;
+    cursor: pointer;
+    text-align: left;
+    font-size: 15px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+    position: relative;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+
+    /* 🔹 Inicia com tamanho 0 e sem visibilidade */
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    transition: width 0.1s ease-out, opacity 0.3s ease-out;
+}
+
+.question-btn:hover {
+    background-color: #1e3554;
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.4); /* 🔹 Mesmo efeito das perguntas dinâmicas */
+    transform: scale(1.02); /* 🔹 Pequeno efeito de crescimento ao passar o mouse */
+}
+
+/* 🔹 Quando a pergunta aparece, ela cresce gradualmente */
+.question-btn.visible {
+    opacity: 1;
+}
+
 
         /* ----------------------------------------------------------
    RESPONSIVIDADE - Ajuste para smartphones
@@ -811,6 +825,119 @@
         .font-small { font-size: 0.9rem; }
         .font-medium { font-size: 1rem; }
         .font-large { font-size: 1.2rem; }
+
+/*************************************************************** 
+ *               ESTILO PARA AS PERGUNTAS DINÂMICAS
+ ***************************************************************/
+ .dynamic-question {
+    background-color: #314b73; /* 🔹 Mesma cor das perguntas pré-definidas */
+    color: white;
+    border: 2px solid #25344f;
+    border-radius: 15px 15px 15px 0;
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 15px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+    position: relative;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    word-wrap: break-word;
+    white-space: normal;
+    min-height: 30px; /* Garante que todas tenham pelo menos uma altura base */
+}
+
+.dynamic-question.hidden {
+    visibility: hidden;
+}
+
+.dynamic-question:hover {
+    background-color: #1e3554;
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.4);
+    transform: scale(1.02); /* 🔹 Pequeno efeito de crescimento */
+}
+
+/* 🔹 Estilo do Modal de Confirmação */
+.modal {
+    display: none; /* Oculto inicialmente */
+    position: absolute; /* Dentro do chat */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro translúcido */
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 280px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.modal-buttons {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-buttons button {
+    background-color: #314b73;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease-in-out; /* 🔹 Suaviza a transição */
+}
+
+/* 🔹 Efeito ao passar o mouse (hover) */
+.modal-buttons button:hover {
+    background-color: #1e3554;
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05); /* 🔹 Pequeno efeito de crescimento */
+}
+
+
+/* 🔹 Modal de Confirmação - Adaptação para Tema Claro/Escuro */
+#chat-box.light-theme .modal-content {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+#chat-box.dark-theme .modal-content {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+}
+
+#chat-box.dark-theme .modal-buttons button {
+    background-color: #4caf50; /* Verde para destacar */
+    color: white;
+    border: none;
+}
+
+#chat-box.dark-theme .modal-buttons button:hover {
+    background-color: #388e3c; /* Verde mais escuro ao passar o mouse */
+}
+
+
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 </head>
@@ -834,6 +961,8 @@
             </button>
         </div>
 
+        <div id="dynamic-questions-container"></div>
+
         <!-- Status fixo -->
         <div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0; display: flex; align-items: center; justify-content: space-between;">
             <span id="status-text" style="margin-right: auto;">Online</span>
@@ -842,6 +971,17 @@
             </button>
         </div>        
         
+        <!-- 🔹 MODAL DE CONFIRMAÇÃO PARA LIMPAR O CHAT -->
+<div id="confirm-clear-modal" class="modal">
+    <div class="modal-content">
+        <p>Tem certeza que deseja apagar todo o histórico de conversa?</p>
+        <div class="modal-buttons">
+            <button id="confirm-clear-yes">Sim</button>
+            <button id="confirm-clear-no">Não</button>
+        </div>
+    </div>
+</div>
+
         
         <!-- Menu de Configurações -->
         <div id="settings-menu" aria-hidden="true" role="dialog" aria-label="Menu de Configurações">
@@ -899,7 +1039,269 @@
         const chatStatus = document.getElementById('chat-status');
         const actionButton = document.getElementById('action-button');
         
-        
+    
+/*************************************************************** 
+ *       GERAR PERGUNTAS DINÂMICAS COM BASE NA RESPOSTA DO BACKEND
+ ***************************************************************/
+ function gerarPerguntasBaseadasNaConversa(perguntasDinamicas) {
+    console.log("🔹 Perguntas dinâmicas recebidas:", perguntasDinamicas); // LOG DE DEPURAÇÃO
+
+    if (!perguntasDinamicas || perguntasDinamicas.length === 0) return; // Se não houver perguntas, sai
+
+    // 🔹 Chama a função que exibe as perguntas abaixo da resposta
+    gerarPerguntasDinamicas(perguntasDinamicas);
+}
+
+
+
+/*************************************************************** 
+ *        FUNÇÃO PARA GERAR E EXIBIR PERGUNTAS DINÂMICAS
+ ***************************************************************/
+ function gerarPerguntasDinamicas(perguntas, sugestao) {
+    const dynamicQuestionsContainer = document.getElementById('dynamic-questions-container');
+    dynamicQuestionsContainer.innerHTML = ''; // Limpa perguntas anteriores
+
+    perguntas.forEach(pergunta => {
+        // Verifica se a pergunta faz sentido como clicável ou se o usuário deve digitar
+        if (pergunta.includes("?")) {
+            const questionBubble = document.createElement('div');
+            questionBubble.className = 'dynamic-question';
+            questionBubble.textContent = pergunta;
+            questionBubble.onclick = () => sendMessageFromQuestion(pergunta);
+            dynamicQuestionsContainer.appendChild(questionBubble);
+        }
+    });
+
+    // 🔹 Adiciona a sugestão de digitação caso existam perguntas dinâmicas
+    if (perguntas.length > 0 && sugestao) {
+        const instruction = document.createElement('div');
+        instruction.className = 'bot-message';
+        instruction.textContent = sugestao;
+        dynamicQuestionsContainer.appendChild(instruction);
+    }
+
+    // Adiciona um pequeno espaçamento visual
+    if (perguntas.length > 0) {
+        const spacing = document.createElement('div');
+        spacing.style.marginBottom = "10px";
+        dynamicQuestionsContainer.appendChild(spacing);
+    }
+}
+
+
+/*************************************************************** 
+ *        MODIFICAR ENVIO DE MENSAGEM PARA ADICIONAR PERGUNTAS
+ ***************************************************************/
+ async function sendMessage() {
+        const inputField = document.getElementById("chat-input");
+        const userMessage = inputField.value.trim();
+        if (!userMessage) return;
+
+        renderMessage(userMessage, "user");
+        inputField.value = "";
+
+        try {
+            const response = await fetch("https://chatbot-exa.onrender.com/chatbot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ mensagem: userMessage })
+            });
+
+            const data = await response.json();
+            renderMessage(data.resposta, "bot");
+
+            if (data.perguntasDinamicas.length > 0) {
+                displayDynamicQuestions(data.perguntasDinamicas);
+            } else {
+                hideDynamicQuestions();
+            }
+
+        } catch (error) {
+            console.error("Erro ao enviar mensagem:", error);
+            renderMessage("Ocorreu um erro. Tente novamente.", "bot");
+        }
+    }
+
+    function renderMessage(text, sender) {
+        const chatMessages = document.getElementById("chat-messages");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", sender);
+        messageDiv.innerText = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function displayDynamicQuestions(questions) {
+        const container = document.getElementById("predefined-questions");
+        container.innerHTML = "";
+
+        questions.forEach(question => {
+            const btn = document.createElement("button");
+            btn.classList.add("question-btn");
+            btn.innerText = question;
+            btn.onclick = () => {
+                document.getElementById("chat-input").value = question;
+                sendMessage();
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function hideDynamicQuestions() {
+        document.getElementById("predefined-questions").innerHTML = "";
+    }
+
+
+/***************************************************************
+ *       EXIBIR AS PERGUNTAS DINÂMICAS LOGO ABAIXO DA RESPOSTA
+ ***************************************************************/
+ async function gerarPerguntasDinamicas(perguntas) {
+    if (!perguntas || perguntas.length === 0) return;
+
+    const container = document.createElement("div");
+    container.classList.add("dynamic-questions-container");
+    chatMessages.appendChild(container);
+
+    for (let i = 0; i < perguntas.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 50)); // 🔹 Delay antes de exibir a próxima
+
+        const questionBubble = document.createElement("button");
+        questionBubble.classList.add("dynamic-question");
+        questionBubble.textContent = "";
+
+        container.appendChild(questionBubble);
+
+        // 🔹 Define como bloco para evitar sobreposição
+        questionBubble.style.display = "block";
+
+        // 🔹 Simulação da digitação gradual letra por letra
+        await digitarTexto(questionBubble, perguntas[i]);
+
+        questionBubble.onclick = () => {
+            chatInput.value = perguntas[i];
+            sendMessage();
+        };
+
+        ajustarScroll(true); // 🔹 Ajusta o scroll a cada nova pergunta
+    }
+}
+
+
+// 🔹 Função para simular a digitação gradual letra por letra
+async function digitarTexto(elemento, texto, velocidade = 40) {
+    for (let i = 0; i < texto.length; i++) {
+        elemento.textContent += texto[i];
+
+        // 🔹 Ajusta o scroll para acompanhar a digitação
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        await new Promise(resolve => setTimeout(resolve, velocidade));
+    }
+}
+
+
+/*************************************************************** 
+ *       EXIBIR O MODAL DE CONFIRMAÇÃO NO CHATBOT
+ ***************************************************************/
+ function showClearChatModal() {
+    const modal = document.getElementById("confirm-clear-modal");
+    modal.style.display = "flex"; // 🔹 Exibe o modal dentro do chat
+}
+
+/*************************************************************** 
+ *       ESCONDER O MODAL SEM APAGAR O HISTÓRICO
+ ***************************************************************/
+ function hideClearChatModal() {
+    const modal = document.getElementById("confirm-clear-modal");
+    setTimeout(() => {
+        modal.style.display = "none"; // 🔹 Esconde o modal suavemente
+    }, 200); // Delay de 200ms
+}
+
+
+
+/*************************************************************** 
+ *       LIMPAR O CHAT E REMOVER AS PERGUNTAS DINÂMICAS (APÓS CONFIRMAÇÃO)
+ ***************************************************************/
+ function clearAllMessages() {
+    const chatMessages = document.getElementById("chat-box-messages");
+    const messages = chatMessages.querySelectorAll("div");
+
+    // Filtra apenas as mensagens removíveis
+    const removableMessages = Array.from(messages).filter(msg =>
+        !msg.classList.contains("fixed-message") && 
+        !msg.id.includes("predefined-questions") && 
+        !msg.classList.contains("welcome-message") 
+    );
+
+    // Remove todas as mensagens filtradas
+    removableMessages.forEach(msg => chatMessages.removeChild(msg));
+
+    // 🔹 Remove as perguntas dinâmicas também
+    const dynamicQuestions = document.querySelectorAll("#dynamic-questions-container");
+    dynamicQuestions.forEach(container => container.remove());
+
+    // Após limpar, o botão volta a ser "Enviar"
+    actionButton.textContent = "Enviar";
+    actionButton.setAttribute("data-action", "send");
+
+    // 🔹 Agora o modal desaparece ao confirmar a exclusão
+    hideClearChatModal();
+}
+
+/*************************************************************** 
+ *       EVENTOS PARA OS BOTÕES DO MODAL
+ ***************************************************************/
+ document.getElementById("confirm-clear-yes").addEventListener("click", () => {
+    clearAllMessages();
+    hideClearChatModal(); // 🔹 Fecha o modal ao limpar
+});
+
+document.getElementById("confirm-clear-no").addEventListener("click", () => {
+    hideClearChatModal(); // 🔹 Apenas fecha o modal sem limpar
+});
+
+
+function atualizarEstiloModal() {
+    const chatBox = document.getElementById("chat-box");
+    const modalContent = document.querySelector(".modal-content");
+
+    if (chatBox.classList.contains("dark-theme")) {
+        modalContent.classList.add("dark-theme");
+    } else {
+        modalContent.classList.remove("dark-theme");
+    }
+}
+
+// Chamando a função ao trocar o tema
+document.getElementById("theme-toggle").addEventListener("change", atualizarEstiloModal);
+
+// 🔹 Fechar modal ao clicar fora dele
+document.getElementById("confirm-clear-modal").addEventListener("click", function (event) {
+    const modalContent = document.querySelector(".modal-content");
+    if (!modalContent.contains(event.target)) {
+        hideClearChatModal(); // Fecha o modal se clicar fora dele
+    }
+});
+
+// 🔹 Fechar modal ao minimizar o chatbot
+document.getElementById("minimize-chat").addEventListener("click", function () {
+    hideClearChatModal(); // Fecha o modal ao minimizar o chat
+});
+
+// 🔹 Fechar modal ao clicar fora do chatbot
+document.addEventListener("click", function (event) {
+    const chatBox = document.getElementById("chat-box");
+    const modal = document.getElementById("confirm-clear-modal");
+
+    if (!chatBox.contains(event.target) && modal.style.display === "flex") {
+        hideClearChatModal(); // Fecha o modal se o usuário clicar fora do chatbot
+        minimizeChat(); // Minimiza o chatbot
+    }
+});
+
 /**************************************************************************************************************************** 
  *        ATUALIZA O BOTÃO PARA "LIMPAR" AO APAGAR TUDO (APÓS 2ª MSG)/ ADICIONANDO DELAY DE 200ms NA TROCA PARA "ENVIAR"
  ****************************************************************************************************************************/
@@ -969,9 +1371,10 @@ actionButton.addEventListener('click', () => {
     if (action === "send") {
         sendMessage(); // Enviar mensagem normalmente
     } else if (action === "clear") {
-        clearAllMessages(); // Agora limpa TODAS as mensagens enviadas pelo usuário
+        showClearChatModal(); // 🔹 Agora exibe o modal de confirmação em vez de limpar diretamente
     }
 });
+
 
         
   /*************************************************************** 
@@ -989,6 +1392,10 @@ function clearAllMessages() {
 
     // Remove todas as mensagens filtradas
     removableMessages.forEach(msg => chatMessages.removeChild(msg));
+    
+    // 🔹 Remove também as perguntas dinâmicas geradas durante a conversa
+    const dynamicQuestions = document.querySelectorAll("#dynamic-questions-container");
+    dynamicQuestions.forEach(container => container.remove());
 
     // Após limpar, o botão volta a ser "Enviar"
     actionButton.textContent = "Enviar";
@@ -996,9 +1403,6 @@ function clearAllMessages() {
 }
 
 
- 
-        
-        
         /***************************************************************
         *               CONTROLE DO TTS (Texto para Fala)
         ***************************************************************/
@@ -1422,7 +1826,8 @@ document.addEventListener('click', (event) => {
         /*************************************************************** 
  *        ALTERA O BOTÃO PARA "LIMPAR" APENAS SE O INPUT ESTIVER VAZIO
  ***************************************************************/
-async function sendMessage() {
+ async function sendMessage() {
+    console.log("✅ Função sendMessage foi chamada!"); // LOG FORÇADO
     const message = chatInput.value.trim();
     if (!message) return;
 
@@ -1431,7 +1836,6 @@ async function sendMessage() {
     responsePending = true;
     atualizarStatus('processando');
 
-    // Adiciona indicador de digitação do bot
     const typingIndicator = document.createElement('div');
     typingIndicator.className = 'typing-indicator';
     typingIndicator.innerHTML = '<span></span><span></span><span></span>';
@@ -1451,10 +1855,13 @@ async function sendMessage() {
         chatMessages.removeChild(typingIndicator); // Remove indicador de digitação
         atualizarStatus('online');
 
-        // Exibe a resposta do chatbot
         await renderizarTextoGradual(data.resposta);
 
-        // 🔹 Verifica se o campo ainda está vazio antes de mudar para "Limpar"
+        setTimeout(() => {
+            console.log("🔹 Chamando gerarPerguntasBaseadasNaConversa() agora...");
+            gerarPerguntasBaseadasNaConversa(data.perguntasDinamicas);
+        }, 800);
+
         if (!chatInput.value.trim()) {
             actionButton.textContent = "Limpar";
             actionButton.setAttribute("data-action", "clear");
@@ -1468,6 +1875,7 @@ async function sendMessage() {
     }
     responsePending = false;
 }
+
 
 
         chatInput.addEventListener('keypress', (event) => {
@@ -1596,36 +2004,59 @@ function exibirSaudacaoInicial() {
     }, 50);
 }
 
-        function digitarPerguntas() {
-            if (perguntasAnimadas) return;
-            perguntasAnimadas = true;
+function digitarPerguntas() {
+    if (perguntasAnimadas) return;
+    perguntasAnimadas = true;
 
-            const perguntasContainer = document.getElementById('predefined-questions');
-            perguntasContainer.style.display = "flex"; 
-            perguntasContainer.style.flexDirection = 'column';
-            perguntasContainer.style.marginTop = '20px';
-            perguntasContainer.style.marginBottom = '10px';
+    const perguntasContainer = document.getElementById('predefined-questions');
+    perguntasContainer.style.display = "flex";
+    perguntasContainer.style.flexDirection = "column";
 
-            const perguntas = perguntasContainer.querySelectorAll('.question-btn');
-            perguntas.forEach((button, index) => {
-                const texto = button.getAttribute('data-question');
-                button.classList.add('hidden'); 
+    const perguntas = perguntasContainer.querySelectorAll('.question-btn');
 
-                // Mostra e anima cada botão
-                setTimeout(() => {
-                    button.classList.remove('hidden');
-                    button.textContent = "";
-                    let i = 0;
-                    const interval = setInterval(() => {
-                        button.textContent += texto[i];
-                        i++;
-                        if (i === texto.length) {
-                            clearInterval(interval);
-                        }
-                    }, 50);
-                }, index * 1500); 
-            });
-        }
+    perguntas.forEach((button, index) => {
+        const texto = button.getAttribute('data-question');
+        button.classList.add('hidden'); // 🔹 Começa invisível
+
+        setTimeout(() => {
+            button.classList.remove('hidden'); // 🔹 Agora mostra o botão
+            button.textContent = ""; // 🔹 Começa sem texto
+            button.style.opacity = "0";
+            button.style.width = "0px"; // 🔹 Começa SEM largura
+            button.style.maxWidth = "0px";
+            button.style.transition = "width 0.2s ease-out, opacity 0.3s ease-out";
+
+            setTimeout(() => {
+                button.style.opacity = "1";
+            }, 50);
+
+            let i = 0;
+
+            function escreverLetra() {
+                if (i < texto.length) {
+                    button.textContent += texto[i];
+                    i++;
+
+                    // 🔹 Cresce o balão conforme cada letra digitada
+                    button.style.width = `${button.scrollWidth + 15}px`;
+                    button.style.maxWidth = "100%"; // 🔹 Evita crescimento infinito
+
+                    // 🔹 Pequenas pausas humanas para realismo
+                    let delay = 40; // 🔹 Velocidade base
+                    if (Math.random() < 0.15) delay = 120; // Pequena pausa aleatória
+                    if (texto[i] === " ") delay = 80; // Pequena pausa em espaços
+                    if ([".", ",", "?", "!"].includes(texto[i - 1])) delay = 200; // 🔹 Pequena pausa ao final de frases
+
+                    setTimeout(escreverLetra, delay);
+                }
+            }
+
+            escreverLetra(); // 🔹 Inicia a digitação gradual
+        }, index * 1300); // 🔹 Aparece uma por vez (1.3s entre cada uma)
+    });
+}
+
+
 
         /***************************************************************
          *               BOTÃO "AUTOMÁTICO" (IDIOMA)
