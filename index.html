@@ -14,7 +14,7 @@
         ---------------------------------------------------------- */
         #chat-widget {
             position: fixed;
-            bottom: 60px;
+            bottom: 80px;
             right: 5px;
             width: 60px;
             height: 60px;
@@ -495,11 +495,11 @@
         }
 
         /* ----------------------------------------------------------
-           BALÃO DE PENSAMENTO
+           BALÃO DE PENSAMENTO (Chatbot depis dos 3 segundos)
         ---------------------------------------------------------- */
         #thought-bubble {
             position: fixed;
-            bottom: 125px;
+            bottom: 140px;
             right: 50px;
             background: white;
             border: 1px solid #ccc;
@@ -937,6 +937,60 @@
     background-color: #388e3c; /* Verde mais escuro ao passar o mouse */
 }
 
+@keyframes pingPongBounce {
+    0% { transform: translateX(100vw) translateY(0); opacity: 0; }
+    20% { transform: translateX(80vw) translateY(-20px); opacity: 1; }
+    40% { transform: translateX(60vw) translateY(0); }
+    60% { transform: translateX(40vw) translateY(-15px); }
+    80% { transform: translateX(20vw) translateY(0); }
+    100% { transform: translateX(0) translateY(0); }
+}
+
+#whatsapp-button {
+    position: fixed;
+    bottom: 15px; /* 🔹 Ajuste conforme necessário */
+    right: 5px;
+    width: 60px;
+    height: 60px;
+    background-color: #25D366; /* Cor do WhatsApp */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 1000; /* Mantém visível sobre os outros elementos */
+    opacity: 0; /* Começa invisível */
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* Quando o ícone deve aparecer */
+#whatsapp-button.show {
+    opacity: 1;
+    animation: pingPongBounce 1.5s ease-out;
+}
+
+/* Efeito ao passar o mouse */
+#whatsapp-button:hover {
+    transform: scale(1.1); /* Pequeno zoom */
+    filter: brightness(0.8); /* Escurece um pouco */
+}
+
+
+#whatsapp-button img {
+    width: 35px;
+    height: 35px;
+}
+
+#whatsapp-icon {
+    position: fixed;
+    bottom: 80px; /* Ajuste conforme necessário */
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    opacity: 0; /* Começa invisível */
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
 
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -947,6 +1001,13 @@
         💬
         <div id="chat-widget-notification">1</div>
     </div>
+
+    <div id="whatsapp-button">
+        <a href="https://wa.me/5581999965585" target="_blank">
+            <img src="assets/WhatsApp_icon.png" alt="WhatsApp">
+        </a>
+    </div>
+
     <div id="thought-bubble">
         <button id="thought-bubble-close">&times;</button>
         <p>🤖 Olá! 👋 Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais.</p>
@@ -970,8 +1031,9 @@
                 <i class="fas fa-volume-up"></i>
             </button>
         </div>        
-        
+                
         <!-- 🔹 MODAL DE CONFIRMAÇÃO PARA LIMPAR O CHAT -->
+
 <div id="confirm-clear-modal" class="modal">
     <div class="modal-content">
         <p>Tem certeza que deseja apagar todo o histórico de conversa?</p>
@@ -1052,6 +1114,14 @@
     gerarPerguntasDinamicas(perguntasDinamicas);
 }
 
+/*************************************************************** 
+ *       ICONE DO WHASAPP APARECE DEPOIS DE 5 SEGUNDOS
+ ***************************************************************/
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(() => {
+        document.getElementById("whatsapp-button").classList.add("show");
+    }, 5000); // Exibe após 5 segundos
+});
 
 
 /*************************************************************** 
