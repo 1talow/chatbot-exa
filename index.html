@@ -1108,6 +1108,28 @@
         const actionButton = document.getElementById('action-button');
         
     
+        function esconderWhatsApp() {
+    const whatsappButton = document.getElementById("whatsapp-button");
+    if (whatsappButton) {
+        // Remove a classe "show" (que torna o ícone visível) e adiciona "hidden" para disparar a animação de saída
+        whatsappButton.classList.remove("show");
+        whatsappButton.classList.add("hidden");
+    }
+}
+
+function mostrarWhatsApp() {
+    const whatsappButton = document.getElementById("whatsapp-button");
+    if (whatsappButton) {
+        // Usa um setTimeout com 1 segundo de atraso para adicionar a classe "show" novamente
+        setTimeout(() => {
+            whatsappButton.classList.remove("hidden");
+            whatsappButton.classList.add("show");
+        }, 1000); // 1000 milissegundos = 1 segundo
+    }
+}
+
+
+
 /*************************************************************** 
  *       GERAR PERGUNTAS DINÂMICAS COM BASE NA RESPOSTA DO BACKEND
  ***************************************************************/
@@ -1687,52 +1709,45 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
         /***************************************************************
          *               ABRIR E FECHAR O CHAT (ANIMAÇÃO)
          ***************************************************************/
-        function openChat() {
-            if (isAnimating || chatBox.classList.contains('visible')) return;
-            isAnimating = true;
+         function openChat() {
+    if (isAnimating || chatBox.classList.contains('visible')) return;
+    isAnimating = true;
 
-            // Remove "hidden/closing" e adiciona "visible" (animação "genie-out")
-            chatBox.classList.remove('hidden', 'closing');
-            chatBox.classList.add('visible');
+    chatBox.classList.remove('hidden', 'closing');
+    chatBox.classList.add('visible');
 
-            // Ao terminar de abrir, libera a flag
-            chatBox.addEventListener('animationend', () => {
-                isAnimating = false;
-            }, { once: true });
-        }
+    chatBox.addEventListener('animationend', () => {
+        isAnimating = false;
+    }, { once: true });
 
-        function minimizeChat() {
+    // Esconde o ícone do WhatsApp ao abrir o chat
+    esconderWhatsApp();
+}
+
+
+function minimizeChat() {
     if (isAnimating || !chatBox.classList.contains('visible')) return;
     isAnimating = true;
 
-    // Sai de "visible" e entra em "closing" (genie-in)
     chatBox.classList.remove('visible');
     chatBox.classList.add('closing');
 
-    // Quando terminar a animação, aplicamos "hidden"
     chatBox.addEventListener('animationend', () => {
         chatBox.classList.remove('closing');
         chatBox.classList.add('hidden');
         isAnimating = false;
 
-        // Reexibe o widget
+        // Reexibe o widget do chat
         chatWidget.classList.remove('hidden');
 
-        // **Fecha o menu de configurações ao minimizar o chat**
-        if (settingsMenu.style.display === 'block') {
-            settingsMenu.style.display = 'none';
-            settingsGear.classList.remove('rotate-right');
-            settingsGear.classList.add('rotate-left');
-            isRotatedRight = false;
-        }
+        // Mostra o ícone do WhatsApp com 1 segundo de atraso
+        mostrarWhatsApp();
     }, { once: true });
 
-    // Se há resposta pendente, mostra notificação
     if (responsePending) {
         notification.style.display = "flex";
     }
 }
-
 
         /***************************************************************
          *               CLIQUE NO ÍCONE DO CHAT (widget)
