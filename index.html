@@ -10,7 +10,7 @@
         }
 
         /* ----------------------------------------------------------
-           ÍCONE DO CHAT (WIDGET)
+           ÍCONE DO CHAT (WIDGET Chatbot)
         ---------------------------------------------------------- */
         #chat-widget {
             background-image: url('https://1talow.github.io/chatbot-exa/assets/Exabot_icon.jpeg');
@@ -26,9 +26,11 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Dá um efeito de profundidade */
             animation: bounce 2s infinite;
             font-size: 24px;
             transition: opacity 0.3s ease, transform 0.3s ease;
+            
         }
 
         #chat-widget.hidden {
@@ -47,7 +49,7 @@
 
         #chat-widget-notification {
             position: absolute;
-            top: 5px;
+            top: -10px;
             right: 5px;
             background-color: red;
             color: white;
@@ -1001,10 +1003,12 @@
 <body>
     <div id="chat-widget">
         <div id="chat-widget-notification">1</div>
+        <div id="chatbot-icon"></div>
     </div>
+</body>
 
     <div id="whatsapp-button">
-        <a href="https://wa.me/5581999965585" target="_blank">
+        <a href="https://api.whatsapp.com/message/GYKWFB36MW6SO1?autoload=1&app_absent=0" target="_blank">
             <img src="https://1talow.github.io/chatbot-exa/assets/WhatsApp_icon.png
             " alt="WhatsApp">
         </a>
