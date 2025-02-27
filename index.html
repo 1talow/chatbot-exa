@@ -971,7 +971,9 @@
 /* Quando o ícone deve aparecer */
 #whatsapp-button.show {
     opacity: 1;
-    animation: pingPongBounce 1.5s ease-out;
+    pointer-events: auto; /* Permite cliques quando visível */
+    /* Mantenha ou ajuste a animação existente */
+    animation: pingPongBounce 0.5s ease-out;
 }
 
 /* Efeito ao passar o mouse */
