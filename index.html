@@ -980,6 +980,12 @@
     filter: brightness(0.8); /* Escurece um pouco */
 }
 
+#whatsapp-button.hidden {
+    opacity: 0;
+    transform: translateX(100px);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: none; /* Desativa cliques quando oculto */
+}
 
 #whatsapp-button img {
     width: 35px;
