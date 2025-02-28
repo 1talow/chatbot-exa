@@ -1725,54 +1725,59 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
         });
 
         function openChat() {
-    if (isAnimating || chatBox.classList.contains('visible')) return;
-    isAnimating = true;
+  if (isAnimating || chatBox.classList.contains('visible')) return;
+  isAnimating = true;
 
-    chatBox.classList.remove('hidden', 'closing');
-    chatBox.classList.add('visible');
-    
-    // Se estiver em dispositivo móvel, adiciona a classe para full‑screen
-    if (window.innerWidth <= 768) {
-        chatBox.classList.add('full-screen');
-    }
+  chatBox.classList.remove('hidden', 'closing');
+  chatBox.classList.add('visible');
 
-    chatBox.addEventListener('animationend', () => {
-        isAnimating = false;
-    }, { once: true });
+  // Se estiver em dispositivo móvel, adiciona a classe full‑screen (opcional)
+  if (window.innerWidth <= 768) {
+    chatBox.classList.add('full-screen');
+  }
 
-    // Esconde o ícone do WhatsApp ao abrir o chat
-    esconderWhatsApp();
+  chatBox.addEventListener('animationend', () => {
+    isAnimating = false;
+    // Após a animação, força o scroll para o topo da área de mensagens
+    setTimeout(() => {
+      chatMessages.scrollTop = 0;
+      // ou, se preferir que o chatBox fique visível:
+      // chatBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, { once: true });
+
+  // Esconde o ícone do WhatsApp ao abrir o chat
+  esconderWhatsApp();
 }
 
 function minimizeChat() {
-    if (isAnimating || !chatBox.classList.contains('visible')) return;
-    isAnimating = true;
+  if (isAnimating || !chatBox.classList.contains('visible')) return;
+  isAnimating = true;
 
-    chatBox.classList.remove('visible');
-    chatBox.classList.add('closing');
+  chatBox.classList.remove('visible');
+  chatBox.classList.add('closing');
 
-    // Se for móvel, remove a classe full-screen
-    if (window.innerWidth <= 768) {
-        chatBox.classList.remove('full-screen');
-    }
+  // Se for móvel, remove a classe full‑screen (caso esteja)
+  if (window.innerWidth <= 768) {
+    chatBox.classList.remove('full-screen');
+  }
 
-    chatBox.addEventListener('animationend', () => {
-        chatBox.classList.remove('closing');
-        chatBox.classList.add('hidden');
-        isAnimating = false;
+  chatBox.addEventListener('animationend', () => {
+    chatBox.classList.remove('closing');
+    chatBox.classList.add('hidden');
+    isAnimating = false;
 
-        // Reexibe o widget do chat
-        chatWidget.classList.remove('hidden');
+    // Reexibe o widget do chat
+    chatWidget.classList.remove('hidden');
 
-        // Mostra o ícone do WhatsApp com 1 segundo de atraso
-        mostrarWhatsApp();
-    }, { once: true });
+    // Mostra o ícone do WhatsApp com 1 segundo de atraso
+    mostrarWhatsApp();
+  }, { once: true });
 
-    if (responsePending) {
-        notification.style.display = "flex";
-    }
+  if (responsePending) {
+    notification.style.display = "flex";
+  }
 }
-
 
         /***************************************************************
          *               CLIQUE NO ÍCONE DO CHAT (widget)
