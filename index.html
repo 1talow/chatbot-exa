@@ -613,29 +613,32 @@
    RESPONSIVIDADE - Ajuste para smartphones
 ---------------------------------------------------------- */
 @media (max-width: 768px) {
-  /* Regras já existentes */
+  /* Chatbox para smartphones */
   #chat-box {
-      width: 90vw;
-      height: 80vh;
-      bottom: 10px;
-      right: 5%;
-      max-width: 400px;
-      border-radius: 15px;
+    width: 100vw;         /* Ocupa toda a largura da tela */
+    height: 90vh;         /* Ocupa 90% da altura da tela */
+    bottom: 0;            /* Fica colado na parte inferior */
+    right: 0;             /* Fica alinhado à direita */
+    border-radius: 0;     /* Remove as bordas arredondadas para ocupar a tela inteira */
+    /* Você pode ajustar outros parâmetros como background, bordas, etc., se necessário */
   }
-
+  
+  /* Ajuste a área de mensagens para levar em conta a altura do cabeçalho e do input */
   #chat-box-messages {
-      height: 65vh;
-      padding: 10px;
+    height: calc(90vh - 140px); /* Exemplo: subtrai 140px para cabeçalho e área do input */
+    padding: 10px;
+  }
+  
+  /* Caso queira ajustar o tamanho da fonte do input ou do botão para melhor experiência móvel */
+  #chat-box-input input {
+    font-size: 16px;
+  }
+  
+  #chat-box-input button {
+    font-size: 14px;
+    padding: 12px;
   }
 
-  #chat-input {
-      font-size: 16px;
-  }
-
-  #action-button {
-      font-size: 14px;
-      padding: 12px;
-  }
 
   /* Nova regra para modo full-screen */
   #chat-box.full-screen {
