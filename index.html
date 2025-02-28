@@ -612,35 +612,46 @@
    RESPONSIVIDADE - Ajuste para smartphones
 ---------------------------------------------------------- */
 @media (max-width: 768px) {
-    #chat-box {
-        width: 90vw; /* Ocupa 90% da largura da tela */
-        height: 80vh; /* Agora ocupa 80% da altura da tela */
-        bottom: 10px;
-        right: 5%;
-        max-width: 400px; /* Máximo de 400px para não ficar exagerado */
-        border-radius: 15px; /* Bordas arredondadas para um visual mais moderno */
-    }
+  /* Regras já existentes */
+  #chat-box {
+      width: 90vw;
+      height: 80vh;
+      bottom: 10px;
+      right: 5%;
+      max-width: 400px;
+      border-radius: 15px;
+  }
 
-    #chat-box-messages {
-        height: 65vh; /* Ajusta a área de mensagens */
-        padding: 10px;
-    }
+  #chat-box-messages {
+      height: 65vh;
+      padding: 10px;
+  }
 
-    #chat-input {
-        font-size: 16px; /* Fonte maior para facilitar a digitação */
-    }
+  #chat-input {
+      font-size: 16px;
+  }
 
-    #action-button {
-        font-size: 14px;
-        padding: 12px; /* Aumenta a área de toque para maior conforto */
-    }
+  #action-button {
+      font-size: 14px;
+      padding: 12px;
+  }
+
+  /* Nova regra para modo full-screen */
+  #chat-box.full-screen {
+      width: 100vw;
+      height: 100vh;
+      bottom: 0;
+      right: 0;
+      max-width: 100vw;
+      border-radius: 0;
+  }
 }
 
 /* Ajuste para telas menores ainda (exemplo: smartphones pequenos) */
 @media (max-width: 480px) {
-    #chat-box {
-        height: 85vh; /* Aumenta um pouco mais a altura em telas muito pequenas */
-    }
+  #chat-box {
+      height: 85vh;
+  }
 }
 
 /*************************************************************** 
@@ -1714,15 +1725,17 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
             atualizarStatus('online');
         });
 
-        /***************************************************************
-         *               ABRIR E FECHAR O CHAT (ANIMAÇÃO)
-         ***************************************************************/
-         function openChat() {
+        function openChat() {
     if (isAnimating || chatBox.classList.contains('visible')) return;
     isAnimating = true;
 
     chatBox.classList.remove('hidden', 'closing');
     chatBox.classList.add('visible');
+    
+    // Se estiver em dispositivo móvel, adiciona a classe para full‑screen
+    if (window.innerWidth <= 768) {
+        chatBox.classList.add('full-screen');
+    }
 
     chatBox.addEventListener('animationend', () => {
         isAnimating = false;
@@ -1732,13 +1745,17 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
     esconderWhatsApp();
 }
 
-
 function minimizeChat() {
     if (isAnimating || !chatBox.classList.contains('visible')) return;
     isAnimating = true;
 
     chatBox.classList.remove('visible');
     chatBox.classList.add('closing');
+
+    // Se for móvel, remove a classe full-screen
+    if (window.innerWidth <= 768) {
+        chatBox.classList.remove('full-screen');
+    }
 
     chatBox.addEventListener('animationend', () => {
         chatBox.classList.remove('closing');
@@ -1756,6 +1773,7 @@ function minimizeChat() {
         notification.style.display = "flex";
     }
 }
+
 
         /***************************************************************
          *               CLIQUE NO ÍCONE DO CHAT (widget)
