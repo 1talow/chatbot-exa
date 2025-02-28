@@ -92,10 +92,12 @@
         ---------------------------------------------------------- */
         #chat-box {
             position: fixed;
+            top: 0;
             bottom: 120px;
-            right:20px;
-            width: 330px;
-            height: 600px;
+            right: 5px;
+  width: 330px;
+  height: 100vh; /* Ocupa toda a altura da tela */
+  z-index: 9999; /* Valor alto para sobrepor outros elementos */
             background-color: #f9f9f9;
             border: 1px solid #ccc;
             border-radius: 10px;
