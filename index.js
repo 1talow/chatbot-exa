@@ -1,3 +1,4 @@
+import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
@@ -12,6 +13,9 @@ app.use(cors());
 app.use(express.json());
 
 const apiKey = process.env.OPENAI_API_KEY;
+
+// 🔹 Criar variável para armazenar os dados do usuário
+let dadosUsuarios = {}; // Armazena temporariamente os dados do usuário
 
 // 🚀 Função para decidir se o chatbot deve gerar perguntas ou apenas responder
 function decidirGerarPerguntas(mensagemUsuario) {
@@ -67,10 +71,232 @@ async function traduzirServicos(idiomaDetectado) {
     }
 }
 
-// 🔹 Endpoint principal do chatbot
-app.post('/chatbot', async (req, res) => {
+// 🔹 Configuração do Nodemailer para envio de e-mails
+const transporter = nodemailer.createTransport({
+    host: "smtp.titan.email",
+    port: 465,
+    secure: true, // true para SSL/TLS
+    auth: {
+        user: process.env.EMAIL_USER, // E-mail de envio
+        pass: process.env.EMAIL_PASS, // Senha ou senha de aplicativo
+    },
+});
+
+// 🔹 Função para enviar e-mail com os dados coletados
+async function enviarEmail(dados) {
     try {
+        const mailOptions = {
+            from: `"EXA Engenharia" <${process.env.EMAIL_USER}>`,
+            to: "contato@exaengenharia.com", // E-mail de destino
+            subject: "Novo Pedido de Orçamento |Handoff EXAbot| Outbound| Triagem Automatizada| EXA Engenharia",
+            html: `
+    <h2>📌 <strong>NOVO PEDIDO DE ORÇAMENTO</strong></h2>
+    <hr>
+    <p><strong>📞 Telefone:</strong> ${dados.telefone || "Não informado"}</p>
+    <p><strong>📧 E-mail:</strong> ${dados.email || "Não informado"}</p>
+    <p><strong>👤 Nome:</strong> ${dados.nome}</p>
+    <p><strong>📝 Resumo da conversa:</strong> ${dados.resumo || "Sem detalhes adicionais"}</p>
+    <hr>
+    <p>📍 <em>Esta solicitação foi gerada automaticamente pelo ExaBot.</em></p>
+`,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log("✅ E-mail enviado com sucesso!");
+    } catch (error) {
+        console.error("❌ Erro ao enviar o e-mail:", error);
+    }
+}
+
+// 🔹 Função para gerar um resumo inteligente da conversa usando a OpenAI
+async function gerarResumoConversa(historico) {
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "Resuma a conversa do usuário com o chatbot da EXA Engenharia de forma clara e objetiva. Destaque qual foi o interesse do usuário e sua dúvida principal." },
+                    { role: "user", content: historico.join("\n") }
+                ],
+                max_tokens: 200,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            console.error("❌ Erro ao gerar resumo com a OpenAI.");
+            return "Resumo não disponível devido a um erro na API.";
+        }
+
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content.trim() || "Resumo não disponível.";
+        
+    } catch (error) {
+        console.error("❌ Erro ao gerar resumo com a OpenAI:", error);
+        return "Resumo não disponível.";
+    }
+}
+
+
+
+        // 🔹 Endpoint principal do chatbot
+        app.post('/chatbot', async (req, res) => {
+        try {
         const { mensagem } = req.body;
+
+        // 🔹 Criar variável global para armazenar histórico da conversa
+if (!dadosUsuarios.historico) {
+    dadosUsuarios.historico = [];
+}
+
+// 🔹 Armazenar a nova mensagem no histórico
+dadosUsuarios.historico.push(mensagem);
+
+
+        // 🔹 Verifica se o usuário pediu um orçamento
+        if (mensagem.toLowerCase().includes("orçamento") || mensagem.toLowerCase().includes("cotação") || mensagem.toLowerCase().includes("contratar")) {
+        return res.json({
+        resposta: "Para oferecer um atendimento mais eficiente, podemos solicitar seus dados para um especialista entrar em contato com você. Podemos continuar?",
+        perguntasDinamicas: ["Sim", "Não"]
+        });
+}
+
+        // 🔹 Verifica a resposta do usuário para a pergunta sobre solicitar contato
+        if (mensagem.toLowerCase() === "sim") {
+        return res.json({
+        resposta: "Ótimo! Para dar continuidade, poderia me informar seu **telefone com (DDD)** ou **e-mail?**",
+        perguntasDinamicas: []
+        });
+}
+
+        if (mensagem.toLowerCase() === "não") {
+        return res.json({
+        resposta: "Sem problemas! Caso precise, você pode entrar em contato com a EXA Engenharia pelo 📞**telefone (81) 99996-5585** ou ✉️**e-mail contato@exaengenharia.com**. Obrigado!😀",
+        perguntasDinamicas: []
+        });
+}
+
+
+// 🔹 Validação dinâmica de telefone: aceita formatos variados com ou sem (), -, espaço
+const regexTelefone = /^(\(?\d{2}\)?\s?)?(\d{4,5})[-.\s]?(\d{4})$/;
+
+// 🔹 Validação de e-mail: exige um formato correto
+const regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// 🔹 Validação do nome: impede números e caracteres inválidos
+const regexNome = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?: [A-Za-zÀ-ÖØ-öø-ÿ]+)+$/;
+
+
+// 🔹 Verifica se a mensagem contém um telefone válido
+const matchTelefone = mensagem.match(regexTelefone);
+if (matchTelefone && !mensagem.includes("@")) { // Garante que não seja um e-mail
+    const telefoneFormatado = mensagem.replace(/\D/g, ""); // Remove caracteres não numéricos
+
+    if (telefoneFormatado.length === 11) { // Confirma que tem 11 dígitos (DDD + número)
+        dadosUsuarios.telefone = telefoneFormatado;
+        return res.json({
+            resposta: "Agora, por favor, informe seu nome. 😊",
+            perguntasDinamicas: []
+        });
+    } else {
+        return res.json({
+            resposta: "❌ O número informado não parece ser válido. Poderia informar um telefone com **DDD** correto? Exemplo: (99) 99999-9999 📱",
+            perguntasDinamicas: []
+        });
+    }
+}
+
+// 🔹 Se o usuário digitar um número curto ou inválido, peça novamente
+if (/\d+/.test(mensagem)) {
+    return res.json({
+        resposta: "❌ Esse telefone não parece válido. Poderia informar um número com **DDD** correto? Exemplo: (99) 99999-9999 📱",
+        perguntasDinamicas: []
+    });
+}
+
+
+// 🔹 Verifica se a mensagem contém um e-mail válido
+if (regexEmail.test(mensagem.trim())) {
+    dadosUsuarios.email = mensagem.trim(); // Salva o e-mail corretamente
+    return res.json({
+        resposta: "Agora, por favor, informe seu nome. 😊",
+        perguntasDinamicas: []
+    });
+} else if (mensagem.includes("@")) {
+    return res.json({
+        resposta: "❌ Esse e-mail não parece válido. Poderia informar novamente? Exemplo: usuario@email.com 📧",
+        perguntasDinamicas: []
+    });
+}
+
+// 🔹 Se o usuário já informou telefone ou e-mail, verificar se está fornecendo o nome
+if (dadosUsuarios.telefone || dadosUsuarios.email) {
+    const nomeValido = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,}$/.test(mensagem.trim());
+
+    if (nomeValido) {
+        dadosUsuarios.nome = mensagem.trim(); // Salva o nome
+
+        // ✅ **Gerar resumo da conversa com a OpenAI antes de enviar o e-mail**
+        const resumoConversa = await gerarResumoConversa(dadosUsuarios.historico || []);
+
+        // ✅ **Antes de resetar, enviar o e-mail com o resumo da OpenAI**
+        try {
+            await enviarEmail({ 
+                nome: dadosUsuarios.nome, 
+                telefone: dadosUsuarios.telefone || "Não informado",
+                email: dadosUsuarios.email || "Não informado",
+                resumo: resumoConversa // Insere o resumo inteligente no e-mail
+            });
+            console.log("✅ E-mail enviado com sucesso!");
+        } catch (error) {
+            console.error("❌ Erro ao enviar o e-mail:", error);
+        }
+
+        // 🔹 Mensagem de confirmação
+        const respostaFinal = `✅ Obrigado, ${mensagem}! Seus dados foram registrados e encaminhados para nossos especialistas. Aguarde o contato. Se precisar de mais alguma coisa, estou aqui para ajudar! 😊`;
+
+        // 🔹 Resetando os dados para evitar que o chatbot continue no fluxo do orçamento
+        dadosUsuarios = {};
+
+        return res.json({
+            resposta: respostaFinal,
+            perguntasDinamicas: ["Quais serviços a EXA oferece?", "Qual seria o portfólio da EXA?", "Como faço para contratar um serviço?"]
+        });
+    } else {
+        return res.json({
+            resposta: "❌ Esse **nome** não parece válido. Por favor, informe um nome correto sem caracteres especiais. Exemplo: **José** ou **José Rodrigues**.",
+            perguntasDinamicas: []
+        });
+    }
+}
+
+
+// 🔹 Função para chamar a API da OpenAI e obter respostas mais inteligentes
+async function chamarOpenAI(mensagem) {
+    const openAIResponse = await fetch("https://api.openai.com/v1/completions", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: mensagem }],
+            max_tokens: 150
+        })
+    });
+
+    const data = await openAIResponse.json();
+    return data.choices[0]?.message?.content || "Desculpe, não consegui entender sua pergunta.";
+}
+
+
+
 
         // 🔹 Detecta o idioma antes de enviar a requisição principal
         const idiomaDetectado = await detectarIdioma(mensagem);
