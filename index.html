@@ -449,7 +449,7 @@
         ---------------------------------------------------------- */
         #chat-box-input {
             display: flex;
-            border-top: 1px solid #ccc;
+            border-top: 1px solid #cccccc;
         }
         #chat-box-input input {
             flex: 1;
@@ -499,9 +499,9 @@
             animation-delay: -0.16s;
         }
 
-        /* ----------------------------------------------------------
-           BALÃO DE PENSAMENTO (Chatbot depis dos 3 segundos)
-        ---------------------------------------------------------- */
+        /* ---------------------------------------------------------------------
+           BALÃO DE PENSAMENTO QUANDO MINIMIZADO (Chatbot depois dos 3 segundos)
+        ------------------------------------------------------------------------ */
         #thought-bubble {
             position: fixed;
             bottom: 140px;
@@ -510,7 +510,7 @@
             border: 1px solid #ccc;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            padding: 10px 15px;
+            padding: 5px 7px;
             max-width: 250px;
             font-size: 16px;
             display: none;
@@ -1038,7 +1038,7 @@
 
     <div id="thought-bubble">
         <button id="thought-bubble-close">&times;</button>
-        <p>🤖 Olá! 👋 Sou o ExaBot, o assistente virtual da Exa Engenharia. Estou aqui para ajudar com informações sobre nossos serviços, portfólio e muito mais.</p>
+        <p>Olá! 👋 Sou o Exabot, assistente virtual da EXA Engenharia. Tem alguma dúvida ou precisa de informações? Pergunte agora!💡</p>
     </div>
 
     <div id="chat-box" class="light-theme hidden"><!-- começa oculto -->
@@ -1145,7 +1145,7 @@ function mostrarWhatsApp() {
         setTimeout(() => {
             whatsappButton.classList.remove("hidden");
             whatsappButton.classList.add("show");
-        }, 1000); // 1 segundo de delay
+        }, 200); // 0.2 segundos de delay
     }
 }
 
@@ -1170,7 +1170,7 @@ function mostrarWhatsApp() {
 document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
         document.getElementById("whatsapp-button").classList.add("show");
-    }, 5000); // Exibe após 5 segundos
+    }, 800); // Exibe após 0.8 segundos
 });
 
 

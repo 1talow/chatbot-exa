@@ -16,6 +16,87 @@ const apiKey = process.env.OPENAI_API_KEY;
 
 // 🔹 Criar variável para armazenar os dados do usuário
 let dadosUsuarios = {}; // Armazena temporariamente os dados do usuário
+let mensagemExpirada = null; // Armazena a mensagem quando o orçamento expira
+let modoOrcamento = false;
+let timeoutOrcamento = null; // Variável para armazenar o temporizador do orçamento
+let tentativasServico = 0;
+
+
+async function identificarServicoIA(mensagem) {
+    const servicosExa = [
+        "Cabeamento Estruturado",
+        "Painéis de Telecomunicações",
+        "CFTV",
+        "Fibra Óptica",
+        "Implantação de Sistemas",
+        "Teleproteção Digital",
+        "Automação",
+        "Teleproteção Oplat",
+        "Especificação Técnica",
+        "WorkStatement",
+        "Projeto Básico e Executivo",
+        "Medição de Resistividade do Solo"
+    ];
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: `Você é um assistente inteligente que ajuda clientes a escolherem serviços da EXA Engenharia. Seu objetivo é identificar o serviço correto baseado na mensagem do usuário. Se houver mais de uma opção possível, retorne uma lista de sugestões. 
+                    
+                    **Lista de serviços disponíveis:**
+                    ${servicosExa.join(", ")}
+                    
+                    **Formato da resposta (JSON válido):**
+                    {
+                        "servicoConfirmado": "Nome do serviço" ou null,
+                        "sugestoes": ["Opção 1", "Opção 2"] (se houver dúvida)
+                    }
+                    ` },
+                    { role: "user", content: `O usuário digitou: "${mensagem}". Identifique o serviço correto baseado na lista disponível.` }
+                ],
+                max_tokens: 100,
+                temperature: 0.3
+            })
+        });
+
+        const data = await response.json();
+        const respostaIA = JSON.parse(data.choices[0].message.content.trim());
+
+        return respostaIA;
+    } catch (error) {
+        console.error("⚠️ Erro ao identificar serviço com IA:", error);
+        return { servicoConfirmado: null, sugestoes: [] };
+    }
+}
+
+
+// 🔹 Função para encerrar o modo orçamento se o tempo expirar
+function encerrarModoOrcamentoPorTempo() {
+    if (modoOrcamento) {
+        modoOrcamento = false;
+        dadosUsuarios = {}; // Reseta os dados do orçamento
+
+        console.log("⏳ Tempo do orçamento expirado. Resetando para modo global.");
+
+        return {
+            resposta: "O tempo para preencher o orçamento expirou ⏳. Caso ainda precise, você pode solicitar novamente ou entrar em contato com a **EXA Engenharia** pelo 📞telefone (81) 99996-5585 ou **✉️e-mail contato@exaengenharia.com**.",
+            perguntasDinamicas: [
+                "Como posso solicitar um orçamento?",
+                "Quais são os serviços oferecidos pela EXA?",
+                "A EXA oferece suporte técnico?"
+            ]
+        };
+    }
+    return null;
+}
+
 
 // 🚀 Função para decidir se o chatbot deve gerar perguntas ou apenas responder
 function decidirGerarPerguntas(mensagemUsuario) {
@@ -52,7 +133,7 @@ async function traduzirServicos(idiomaDetectado) {
                     { role: 'system', content: `Traduza a seguinte lista de serviços da EXA Engenharia para ${idiomaDetectado}, mantendo a formatação natural e sem explicações:` },
                     { role: 'user', content: servicosEmPortugues }
                 ],
-                max_tokens: 200,
+                max_tokens: 400,
                 temperature: 0
             })
         });
@@ -87,7 +168,7 @@ async function enviarEmail(dados) {
     try {
         const mailOptions = {
             from: `"EXA Engenharia" <${process.env.EMAIL_USER}>`,
-            to: "contato@exaengenharia.com", // E-mail de destino
+            to: "contato@exaengenharia.com",
             subject: "Novo Pedido de Orçamento |Handoff EXAbot| Outbound| Triagem Automatizada| EXA Engenharia",
             html: `
     <h2>📌 <strong>NOVO PEDIDO DE ORÇAMENTO</strong></h2>
@@ -95,10 +176,12 @@ async function enviarEmail(dados) {
     <p><strong>📞 Telefone:</strong> ${dados.telefone || "Não informado"}</p>
     <p><strong>📧 E-mail:</strong> ${dados.email || "Não informado"}</p>
     <p><strong>👤 Nome:</strong> ${dados.nome}</p>
+    <p><strong>💬 Serviço:</strong> ${dados.servico || "Não informado"}</p>
+    <p><strong>❓ Dúvida:</strong> ${dados.duvida || "Nenhuma dúvida adicional informada"}</p>
     <p><strong>📝 Resumo da conversa:</strong> ${dados.resumo || "Sem detalhes adicionais"}</p>
     <hr>
     <p>📍 <em>Esta solicitação foi gerada automaticamente pelo ExaBot.</em></p>
-`,
+`
         };
 
         await transporter.sendMail(mailOptions);
@@ -107,6 +190,7 @@ async function enviarEmail(dados) {
         console.error("❌ Erro ao enviar o e-mail:", error);
     }
 }
+
 
 // 🔹 Função para gerar um resumo inteligente da conversa usando a OpenAI
 async function gerarResumoConversa(historico) {
@@ -118,12 +202,12 @@ async function gerarResumoConversa(historico) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini",
+                model: "gpt-4o",
                 messages: [
                     { role: "system", content: "Resuma a conversa do usuário com o chatbot da EXA Engenharia de forma clara e objetiva. Destaque qual foi o interesse do usuário e sua dúvida principal." },
                     { role: "user", content: historico.join("\n") }
                 ],
-                max_tokens: 200,
+                max_tokens: 400,
                 temperature: 0.7
             })
         });
@@ -142,12 +226,19 @@ async function gerarResumoConversa(historico) {
     }
 }
 
-
-
         // 🔹 Endpoint principal do chatbot
         app.post('/chatbot', async (req, res) => {
         try {
         const { mensagem } = req.body;
+
+        // 🔹 Se houver uma mensagem salva de expiração do orçamento, envia antes de processar qualquer outra coisa
+if (mensagemExpirada) {
+    let resposta = mensagemExpirada; // Copia a mensagem
+    mensagemExpirada = null; // Reseta para evitar repetições
+
+    return res.json(resposta); // Envia a mensagem salva ao usuário
+}
+
 
         // 🔹 Criar variável global para armazenar histórico da conversa
 if (!dadosUsuarios.historico) {
@@ -158,28 +249,165 @@ if (!dadosUsuarios.historico) {
 dadosUsuarios.historico.push(mensagem);
 
 
-        // 🔹 Verifica se o usuário pediu um orçamento
-        if (mensagem.toLowerCase().includes("orçamento") || mensagem.toLowerCase().includes("cotação") || mensagem.toLowerCase().includes("contratar")) {
-        return res.json({
-        resposta: "Para oferecer um atendimento mais eficiente, podemos solicitar seus dados para um especialista entrar em contato com você. Podemos continuar?",
+        // 🔹 Verifica se o usuário pediu um orçamento (mas só ativa se ainda não estiver no modo orçamento)
+const palavrasChaveOrcamento = /orçamento|cotação|contratar|custo|preço|valor/i;
+if (!modoOrcamento && palavrasChaveOrcamento.test(mensagem)) {
+    modoOrcamento = true; // Ativa o modo orçamento se ainda não estiver ativo
+
+// 🔹 Inicia o temporizador de 3 minutos
+if (timeoutOrcamento) clearTimeout(timeoutOrcamento); // Cancela temporizador anterior, se existir
+timeoutOrcamento = setTimeout(() => {
+    if (modoOrcamento) { // Verifica se ainda está no modo orçamento
+        console.log("⏳ Tempo do orçamento expirado. Resetando para modo global.");
+        
+        modoOrcamento = false;
+        dadosUsuarios = {}; // Reseta os dados do orçamento
+
+        // 🔹 Salva a mensagem de expiração para ser enviada na próxima interação do usuário
+        mensagemExpirada = {
+            resposta: "O tempo para preencher o orçamento **expirou** ⏳. Caso ainda precise, você pode **solicitar novamente** ou **entrar em contato** com a **EXA Engenharia** pelo 📞telefone (81) 99996-5585 ou **✉️e-mail contato@exaengenharia.com**.",
+            perguntasDinamicas: [
+                "Como posso solicitar um orçamento?",
+                "Quais são os serviços oferecidos pela EXA?",
+                "A EXA oferece suporte técnico?"
+            ]
+        };
+    }
+}, 180000); // 3 minutos (180000 milissegundos)
+
+
+
+    return res.json({
+        resposta: "**Para oferecer um atendimento mais eficiente**, podemos solicitar seus **dados** para um **especialista** entrar em contato com você. **Podemos continuar**?",
         perguntasDinamicas: ["Sim", "Não"]
-        });
+    });
 }
+
+if (modoOrcamento && !dadosUsuarios.nome && mensagem.toLowerCase() === "não") {
+    modoOrcamento = false;
+    
+    return res.json({
+        resposta: "**Sem problemas!** Caso precise, você pode entrar em contato com a **EXA Engenharia** pelo 📞**telefone (81) 99996-5585** ou **✉️e-mail contato@exaengenharia.com**. **Posso te ajudar com algo mais?**",
+        perguntasDinamicas: ["Sim", "Não"]
+    });
+}
+
+// 🔹 Se o usuário responder "Sim", reinicia a conversa normalmente
+if (!modoOrcamento && mensagem.toLowerCase() === "sim") {
+    return res.json({
+        resposta: "Ótimo! Escolha uma pergunta abaixo ou digite a sua.",
+        perguntasDinamicas: [
+            "Como posso solicitar um orçamento?",
+            "Quais são os serviços oferecidos pela EXA?",
+            "Qual é a missão da EXA?"
+        ]
+    });
+}
+
+// 🔹 Se o usuário responder "Não", finaliza a conversa educadamente
+if (!modoOrcamento && mensagem.toLowerCase() === "não") {
+    return res.json({
+        resposta: "Tudo bem! Se precisar de algo no futuro, estarei por aqui. 😊"
+    });
+}
+
+
+        
 
         // 🔹 Verifica a resposta do usuário para a pergunta sobre solicitar contato
-        if (mensagem.toLowerCase() === "sim") {
+if (mensagem.toLowerCase() === "sim") {
+    // 🔹 Antes de pedir telefone/e-mail, o chatbot exibe os serviços da EXA
+    if (!dadosUsuarios.servicoSelecionado) {
         return res.json({
-        resposta: "Ótimo! Para dar continuidade, poderia me informar seu **telefone com (DDD)** ou **e-mail?**",
-        perguntasDinamicas: []
+            resposta: "Antes de prosseguirmos, **selecione** qual **serviço da EXA Engenharia** você deseja **orçamento**?",
+            perguntasDinamicas: [
+                "Cabeamento Estruturado",
+                "Painéis de Telecomunicações",
+                "CFTV",
+                "Fibra Óptica",
+                "Implantação de Sistemas",
+                "Teleproteção Digital",
+                "Automação",
+                "Teleproteção Oplat",
+                "Especificação Técnica",
+                "WorkStatement",
+                "Projeto Básico e Executivo",
+                "Medição de Resistividade do Solo"
+            ]
         });
+    }
 }
 
-        if (mensagem.toLowerCase() === "não") {
+
+// 🔹 Lista de serviços da EXA que podem ser reconhecidos no modo orçamento
+if (modoOrcamento && !dadosUsuarios.servicoSelecionado) {
+    const respostaIA = await identificarServicoIA(mensagem);
+
+    if (respostaIA.servicoConfirmado) {
+        dadosUsuarios.servicoSelecionado = respostaIA.servicoConfirmado;
+        tentativasServico = 0; // ✅ Reseta as tentativas quando um serviço é escolhido corretamente
+
         return res.json({
-        resposta: "Sem problemas! Caso precise, você pode entrar em contato com a EXA Engenharia pelo 📞**telefone (81) 99996-5585** ou ✉️**e-mail contato@exaengenharia.com**. Obrigado!😀",
-        perguntasDinamicas: []
+            resposta: `Ótima escolha! O serviço **${dadosUsuarios.servicoSelecionado}** foi selecionado para o orçamento. Agora, para dar continuidade, poderia me informar seu **telefone com (DDD)** ou **e-mail**?`,
+            perguntasDinamicas: []
         });
+    }
+
+    if (respostaIA.sugestoes.length > 0) {
+        return res.json({
+            resposta: `Não encontrei um serviço exato, mas encontrei essas **opções** que podem ser o que você procura. Qual delas você deseja selecionar?`,
+            perguntasDinamicas: respostaIA.sugestoes
+        });
+    }
+
+    // 🔹 Se o usuário continuar digitando serviços errados, incrementar as tentativas
+    tentativasServico++; // ✅ Agora o contador de tentativas é atualizado corretamente
+
+    if (tentativasServico >= 3) {
+        tentativasServico = 0; // ✅ Reseta o contador para evitar bloqueios futuros
+        modoOrcamento = false; // ✅ Sai do modo orçamento
+
+        return res.json({
+            resposta: "Parece que você está tendo dificuldades em escolher um serviço. Caso precise de ajuda, entre em contato com a **EXA Engenharia** pelo 📞telefone (81) 99996-5585 ou **✉️e-mail contato@exaengenharia.com**.",
+            perguntasDinamicas: [
+                "Como posso solicitar um orçamento?",
+                "Quais são os serviços oferecidos pela EXA?",
+                "A EXA oferece suporte técnico?"
+            ]
+        });
+    }
+
+    return res.json({
+        resposta: `Desculpe, não reconheci esse serviço. Por favor, escolha um dos serviços disponíveis abaixo:`,
+        perguntasDinamicas: [
+            "Cabeamento Estruturado",
+            "Painéis de Telecomunicações",
+            "CFTV",
+            "Fibra Óptica",
+            "Implantação de Sistemas",
+            "Teleproteção Digital",
+            "Automação",
+            "Teleproteção Oplat",
+            "Especificação Técnica",
+            "WorkStatement",
+            "Projeto Básico e Executivo",
+            "Medição de Resistividade do Solo"
+        ]
+    });
 }
+
+
+
+// Resposta global para "não" apenas se não estivermos no modo orçamento:
+if (!modoOrcamento && mensagem.toLowerCase() === "não") {
+    modoOrcamentoIA = false; // 🔹 Desativa a IA após a escolha do serviço
+
+    return res.json({
+        resposta: "Sem problemas! Caso precise, você pode entrar em contato com a EXA Engenharia pelo 📞telefone (81) 99996-5585 ou ✉️e-mail contato@exaengenharia.com. Obrigado!😀",
+        perguntasDinamicas: []
+    });
+}
+
 
 
 // 🔹 Validação dinâmica de telefone: aceita formatos variados com ou sem (), -, espaço
@@ -219,6 +447,31 @@ if (/\d+/.test(mensagem)) {
     });
 }
 
+// 🔹 Lista de mensagens irrelevantes dentro do orçamento
+const mensagensIrrelevantes = ["sim", "não", "ok", "entendi", "talvez", "acho que sim", "acho que não"];
+
+// 🔹 Se estivermos no modo orçamento e o usuário enviar algo irrelevante quando esperávamos telefone ou e-mail
+if (modoOrcamento && !dadosUsuarios.telefone && !dadosUsuarios.email && mensagensIrrelevantes.includes(mensagem.toLowerCase())) {
+    // Contabiliza tentativas erradas
+    dadosUsuarios.erros = (dadosUsuarios.erros || 0) + 1;
+
+    // Se o usuário insistir em respostas erradas 3 vezes, reseta o fluxo
+    if (dadosUsuarios.erros >= 3) {
+        modoOrcamento = false;
+        dadosUsuarios = {}; // Resetar os dados para evitar confusão
+        return res.json({
+            resposta: "Parece que houve um **erro no preenchimento dos dados**. Se precisar, você pode solicitar um **orçamento novamente**! Caso prefira, entre em contato pelo 📞 **telefone: (81) 99996-5585** ou ✉️ **e-mail: contato@exaengenharia.com.**",
+            perguntasDinamicas: ["Como posso solicitar um orçamento?", "Quais são os serviços oferecidos pela EXA?", "A EXA oferece suporte técnico?"]
+        });
+    }
+
+    return res.json({
+        resposta: "Não entendi sua resposta. Por favor, informe seu **telefone com (DDD)** ou **e-mail** para dar continuidade ao orçamento.",
+        perguntasDinamicas: []
+    });
+}
+
+
 
 // 🔹 Verifica se a mensagem contém um e-mail válido
 if (regexEmail.test(mensagem.trim())) {
@@ -234,46 +487,110 @@ if (regexEmail.test(mensagem.trim())) {
     });
 }
 
-// 🔹 Se o usuário já informou telefone ou e-mail, verificar se está fornecendo o nome
-if (dadosUsuarios.telefone || dadosUsuarios.email) {
-    const nomeValido = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,}$/.test(mensagem.trim());
-
-    if (nomeValido) {
-        dadosUsuarios.nome = mensagem.trim(); // Salva o nome
-
-        // ✅ **Gerar resumo da conversa com a OpenAI antes de enviar o e-mail**
-        const resumoConversa = await gerarResumoConversa(dadosUsuarios.historico || []);
-
-        // ✅ **Antes de resetar, enviar o e-mail com o resumo da OpenAI**
-        try {
-            await enviarEmail({ 
-                nome: dadosUsuarios.nome, 
-                telefone: dadosUsuarios.telefone || "Não informado",
-                email: dadosUsuarios.email || "Não informado",
-                resumo: resumoConversa // Insere o resumo inteligente no e-mail
-            });
-            console.log("✅ E-mail enviado com sucesso!");
-        } catch (error) {
-            console.error("❌ Erro ao enviar o e-mail:", error);
-        }
-
-        // 🔹 Mensagem de confirmação
-        const respostaFinal = `✅ Obrigado, ${mensagem}! Seus dados foram registrados e encaminhados para nossos especialistas. Aguarde o contato. Se precisar de mais alguma coisa, estou aqui para ajudar! 😊`;
-
-        // 🔹 Resetando os dados para evitar que o chatbot continue no fluxo do orçamento
-        dadosUsuarios = {};
-
+// Se o usuário já informou telefone ou e-mail, vamos tratar a coleta do nome e da dúvida (no modo orçamento)
+if (modoOrcamento && (dadosUsuarios.telefone || dadosUsuarios.email)) {
+    // Se ainda não coletamos o nome e não há estado definido, trata como etapa de nome
+    if (!dadosUsuarios.nome && !dadosUsuarios.estado) {
+      const nomeValido = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,}$/.test(mensagem.trim());
+      if (nomeValido) {
+        dadosUsuarios.nome = mensagem.trim();
+        // Define o estado para indicar que o nome foi coletado
+        dadosUsuarios.estado = "NOME_COLETA";
         return res.json({
-            resposta: respostaFinal,
-            perguntasDinamicas: ["Quais serviços a EXA oferece?", "Qual seria o portfólio da EXA?", "Como faço para contratar um serviço?"]
+          resposta: `Obrigado, **${dadosUsuarios.nome}**! Antes de **finalizar o atendimento**, Deseja adicionar alguma **dúvida** ou **solicitação específica** sobre **${dadosUsuarios.servicoSelecionado}** para nossa equipe de **especialistas**?`,
+          perguntasDinamicas: ["Sim", "Não"]
         });
-    } else {
+      } else {
         return res.json({
-            resposta: "❌ Esse **nome** não parece válido. Por favor, informe um nome correto sem caracteres especiais. Exemplo: **José** ou **José Rodrigues**.",
-            perguntasDinamicas: []
+          resposta: "❌ Esse **nome** não parece válido. Por favor, informe um nome correto sem caracteres especiais. Exemplo: **José** ou **José Rodrigues**.",
+          perguntasDinamicas: []
         });
+      }
     }
-}
+    
+    // Se já coletamos o nome (estado "NOME_COLETA"), interpretamos a resposta à pergunta de dúvida
+    if (dadosUsuarios.estado === "NOME_COLETA") {
+      if (mensagem.toLowerCase() === "sim") {
+        // Muda para estado aguardando a dúvida
+        dadosUsuarios.estado = "DUVIDA_PENDING";
+        return res.json({
+          resposta: "**Ótimo!** Por favor, informe sua **dúvida** ou **solicitação específica** sobre **" + dadosUsuarios.servicoSelecionado + "**:",
+          perguntasDinamicas: []
+        });
+      } else if (mensagem.toLowerCase() === "não") {
+        // Se o usuário responder "não", usamos dúvida padrão e avançamos
+        dadosUsuarios.duvida = "Nenhuma dúvida adicional informada.";
+        dadosUsuarios.estado = "DUVIDA_DONE";
+      } else {
+        // Se o usuário digitar algo diferente (tendo dado uma resposta que não é "sim" nem "não"),
+        // interpretamos esse texto como a dúvida.
+        dadosUsuarios.duvida = mensagem.trim();
+        dadosUsuarios.estado = "DUVIDA_DONE";
+      }
+    }
+    
+    // Se o estado já estiver em "DUVIDA_PENDING" (caso o usuário forneça o texto da dúvida)
+    if (dadosUsuarios.estado === "DUVIDA_PENDING") {
+      dadosUsuarios.duvida = mensagem.trim();
+      dadosUsuarios.estado = "DUVIDA_DONE";
+    }
+    
+    // Quando o estado é "DUVIDA_DONE", envia o e-mail com os dados coletados e reseta o fluxo
+if (dadosUsuarios.estado === "DUVIDA_DONE") {
+
+    // 🔹 Cancela o temporizador quando o usuário finaliza o orçamento
+    if (timeoutOrcamento) clearTimeout(timeoutOrcamento); 
+    timeoutOrcamento = null; // Remove a referência ao temporizador
+    console.log("✅ Orçamento finalizado. Temporizador cancelado.");
+
+    console.log("📌 Dados do e-mail:");
+    console.log(`Nome: ${dadosUsuarios.nome}`);
+    console.log(`Telefone: ${dadosUsuarios.telefone || "Não informado"}`);
+    console.log(`Email: ${dadosUsuarios.email || "Não informado"}`);
+    console.log(`Serviço: ${dadosUsuarios.servicoSelecionado || "Não informado"}`);
+    console.log(`Dúvida: ${dadosUsuarios.duvida || "Nenhuma dúvida adicional informada."}`);
+
+    
+      const nomeTemp = dadosUsuarios.nome;
+      const telefoneTemp = dadosUsuarios.telefone || "Não informado";
+      const emailTemp = dadosUsuarios.email || "Não informado";
+      const servicoTemp = dadosUsuarios.servicoSelecionado || "Não informado";
+      const duvidaTemp = dadosUsuarios.duvida || "Nenhuma dúvida adicional informada.";
+    
+      const resumoConversa = await gerarResumoConversa(dadosUsuarios.historico || []);
+      console.log("📌 Resumo gerado pela OpenAI:");
+      console.log(resumoConversa);
+    
+      try {
+        console.log("📤 Enviando e-mail...");
+        await enviarEmail({ 
+          nome: nomeTemp, 
+          telefone: telefoneTemp,
+          email: emailTemp,
+          servico: servicoTemp,
+          duvida: duvidaTemp,
+          resumo: resumoConversa
+        });
+        console.log("✅ E-mail enviado com sucesso!");
+      } catch (error) {
+        console.error("❌ Erro ao enviar o e-mail:", error);
+        return res.json({
+          resposta: "⚠️ Ocorreu um erro ao enviar seu pedido de orçamento. Nossa equipe foi notificada e resolveremos isso em breve. Enquanto isso, posso te ajudar com mais alguma dúvida?",
+          perguntasDinamicas: ["Quais serviços a EXA oferece?", "Qual seria o portfólio da EXA?", "Como faço para contratar um serviço?"]
+        });
+      }
+      
+      // Resetar os dados e voltar ao modo normal
+      dadosUsuarios = {};
+      modoOrcamento = false;
+      return res.json({
+        resposta: `✅ Obrigado, **${nomeTemp}**! Sua solicitação para **${servicoTemp}** foi **registrada** e encaminhada para nossa equipe. Em breve **entraremos em contato**. Se precisar de mais alguma coisa, estou à disposição!`,
+        perguntasDinamicas: ["Quais serviços a EXA oferece?", "Qual seria o portfólio da EXA?", "Como faço para contratar um serviço?"]
+      });
+    }
+  }
+  
+
 
 
 // 🔹 Função para chamar a API da OpenAI e obter respostas mais inteligentes
@@ -285,7 +602,7 @@ async function chamarOpenAI(mensagem) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o-mini",
             messages: [{ role: "user", content: mensagem }],
             max_tokens: 150
         })
@@ -565,13 +882,26 @@ if (gerarPerguntas && perguntasDinamicas.length === 0 && responseJson.resposta) 
 // 🔹 Se a resposta for vazia ou irrelevante, gera uma resposta alternativa relevante
 if (!respostaFinal || respostaFinal.includes("Desculpe")) {
     respostaFinal = `
-    ❌ **Não encontrei informações detalhadas sobre esse assunto, mas posso te ajudar!**  
-    📌 O ideal é falar com um de nossos especialistas para obter detalhes técnicos específicos.  
+    Caso precise, você pode entrar em contato com a EXA Engenharia pelo  
 
     📞 **Telefone:** (81) 99996-5585  
     ✉️ **E-mail:** contato@exaengenharia.com  
     `;
+
+    // 🔹 Reseta as perguntas dinâmicas para sugestões padrão ao final
+    perguntasDinamicas = [
+        "Quais serviços a EXA oferece?",
+        "Qual seria o portfólio da EXA?",
+        "Como faço para contratar um serviço?"
+    ];
 }
+
+// 🔹 Retorna a resposta final com perguntas dinâmicas (caso estejam ativadas)
+return res.json({
+    resposta: respostaFinal,
+    perguntasDinamicas: perguntasDinamicas.length > 0 ? perguntasDinamicas : []
+});
+
 
 // 🔹 Adiciona a sugestão de digitação caso existam perguntas dinâmicas e não seja um fim de conversa
 let sugestaoDigitar = "";
