@@ -165,30 +165,49 @@ const transporter = nodemailer.createTransport({
 
 // 🔹 Função para enviar e-mail com os dados coletados
 async function enviarEmail(dados) {
-    try {
-        const mailOptions = {
-            from: `"EXA Engenharia" <${process.env.EMAIL_USER}>`,
-            to: "contato@exaengenharia.com",
-            subject: "Novo Pedido de Orçamento |Handoff EXAbot| Outbound| Triagem Automatizada| EXA Engenharia",
-            html: `
-    <h2>📌 <strong>NOVO PEDIDO DE ORÇAMENTO</strong></h2>
-    <hr>
-    <p><strong>📞 Telefone:</strong> ${dados.telefone || "Não informado"}</p>
-    <p><strong>📧 E-mail:</strong> ${dados.email || "Não informado"}</p>
-    <p><strong>👤 Nome:</strong> ${dados.nome}</p>
-    <p><strong>💬 Serviço:</strong> ${dados.servico || "Não informado"}</p>
-    <p><strong>❓ Dúvida:</strong> ${dados.duvida || "Nenhuma dúvida adicional informada"}</p>
-    <p><strong>📝 Resumo da conversa:</strong> ${dados.resumo || "Sem detalhes adicionais"}</p>
-    <hr>
-    <p>📍 <em>Esta solicitação foi gerada automaticamente pelo ExaBot.</em></p>
-`
-        };
 
-        await transporter.sendMail(mailOptions);
-        console.log("✅ E-mail enviado com sucesso!");
-    } catch (error) {
-        console.error("❌ Erro ao enviar o e-mail:", error);
+    // 🔎 Verifica o histórico antes de analisar
+    console.log("🔍 Histórico antes da análise:", JSON.stringify(dados.historico, null, 2));
+
+    // 🔹 Se o histórico estiver vazio, adicionamos uma mensagem padrão
+    if (!dados.historico || dados.historico.length === 0) {
+        console.warn("⚠️ Histórico vazio, enviando análise padrão.");
+        dados.historico = [{ role: 'system', content: 'Histórico de conversa não disponível.' }];
     }
+
+    // 🔹 Geração do gráfico e análise
+    const urlGrafico = await gerarGraficoEngajamento(dados.historico);
+    const analise = await analisarConversaComIA(dados.historico);
+    const mailOptions = {
+        from: `"EXA Engenharia" <${process.env.EMAIL_USER}>`,
+        to: "contato@exaengenharia.com",
+        subject: "Novo Pedido de Orçamento | Análise Inteligente | EXA Engenharia",
+        html: `
+          <h2>📌 <strong>NOVO PEDIDO DE ORÇAMENTO</strong></h2>
+          <hr>
+          <p><strong>📞 Telefone:</strong> ${dados.telefone || "Não informado"}</p>
+          <p><strong>📧 E-mail:</strong> ${dados.email || "Não informado"}</p>
+          <p><strong>👤 Nome:</strong> ${dados.nome}</p>
+          <p><strong>💬 Serviço:</strong> ${dados.servico || "Não informado"}</p>
+          <p><strong>❓ Dúvida:</strong> ${dados.duvida || "Nenhuma dúvida adicional informada"}</p>
+          <p><strong>📝 Resumo da conversa:</strong> ${dados.resumo || "Sem detalhes adicionais"}</p>
+          <hr>
+          <h3>📊 Análise do Cliente</h3>
+          <ul>
+              <li><strong>🔍 Perfil Identificado:</strong> ${analise.perfil || "Não identificado"}</li>
+              <li><strong>📈 Nível de Engajamento:</strong> ${analise.engajamento || "Não definido"}</li>
+              <li><strong>❓ Total de Dúvidas:</strong> ${analise.duvidas || 0}</li>
+              <li><strong>🗣️ Linguagem:</strong> ${analise.linguagem || "Não identificado"}</li>
+          </ul>
+          <hr>
+          <h3>📊 Gráfico de Engajamento:</h3>
+          <img src="${urlGrafico}" alt="Gráfico de Engajamento" style="max-width: 100%; height: auto;">
+          <hr>
+          <p>📍 <em>Esta solicitação foi gerada automaticamente pelo ExaBot.</em></p>
+        `
+      };      
+
+    await transporter.sendMail(mailOptions);
 }
 
 
@@ -205,7 +224,11 @@ async function gerarResumoConversa(historico) {
                 model: "gpt-4o",
                 messages: [
                     { role: "system", content: "Resuma a conversa do usuário com o chatbot da EXA Engenharia de forma clara e objetiva. Destaque qual foi o interesse do usuário e sua dúvida principal." },
-                    { role: "user", content: historico.join("\n") }
+                    { 
+                        role: "user", 
+                        content: historico.map(m => `${m.role === 'user' ? 'Usuário' : 'ExaBot'}: ${m.content}`).join("\n") 
+                      }
+                      
                 ],
                 max_tokens: 400,
                 temperature: 0.7
@@ -226,6 +249,162 @@ async function gerarResumoConversa(historico) {
     }
 }
 
+async function analisarConversaComIA(historico) {
+    if (!historico || historico.length === 0) {
+      console.warn("⚠️ Histórico vazio, retornando análise padrão.");
+      return {
+        perfil: "Não analisado",
+        engajamento: "Não definido",
+        duvidas: "Não informado",
+        linguagem: "Não identificado"
+      };
+    }
+  
+    const mensagensFormatadas = historico.map((m) => {
+      return `${m.role === "user" ? "Usuário" : "ExaBot"}: ${m.content}`;
+    }).join("\n");
+  
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: `
+  Você é uma IA especialista em comportamento de clientes. Com base na conversa completa abaixo entre um cliente e um chatbot da EXA Engenharia, gere uma análise em formato JSON como este:
+  
+  {
+    "perfil": "Leigo | Intermediário | Técnico",
+    "engajamento": "1/10",
+    "duvidas": 2,
+    "linguagem": "Formal | Informal"
+  }
+  
+  Considere a quantidade de perguntas feitas, se o cliente escreveu corretamente, se demonstrou domínio técnico, se pediu reunião ou orçamento. Seja preciso.
+            `
+            },
+            {
+              role: "user",
+              content: mensagensFormatadas
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.5
+        })
+      });
+  
+      const data = await response.json();
+      const textoResposta = data.choices?.[0]?.message?.content?.trim();
+  
+      // 🧠 Tenta fazer o parse do JSON retornado pela IA
+      try {
+        return JSON.parse(textoResposta);
+      } catch (parseError) {
+        console.error("❌ Erro ao analisar conversa com IA:", parseError);
+        return {
+          perfil: "Não analisado",
+          engajamento: "Não definido",
+          duvidas: "Não informado",
+          linguagem: "Não identificado"
+        };
+      }
+  
+    } catch (error) {
+      console.error("❌ Erro ao chamar OpenAI:", error);
+      return {
+        perfil: "Não analisado",
+        engajamento: "Não definido",
+        duvidas: "Não informado",
+        linguagem: "Não identificado"
+      };
+    }
+  }
+  
+
+// 🔹 Função para gerar gráfico de engajamento usando QuickChart
+import QuickChart from "quickchart-js";
+
+// 🔹 Função para gerar gráfico de engajamento usando QuickChart
+async function gerarGraficoEngajamento(historico) {
+    if (!historico || historico.length === 0) {
+        console.warn("⚠️ Histórico vazio para o gráfico, retornando gráfico padrão.");
+        historico = [{ role: 'system', content: 'Histórico de conversa não disponível.' }];
+    }
+
+    // 🧠 Obtém análise da IA
+    const analise = await analisarConversaComIA(historico);
+
+    // 🔍 Exibe no console o que foi detectado
+    console.log("📊 Análise do Cliente (para o gráfico):", analise);
+
+    // 🔹 Contabiliza os eventos na conversa
+    const totalPerguntas = historico.filter(msg => msg.role === 'user').length;
+    const totalRespostas = historico.filter(msg => msg.role === 'assistant').length;
+    const solicitacoesOrcamento = historico.some(msg => msg.content.toLowerCase().includes("orçamento"));
+    const interesseReuniao = historico.some(msg => msg.content.toLowerCase().includes("reunião"));
+
+    // 🔹 Cria os dados do gráfico
+    const dadosGrafico = {
+        labels: ["Perguntas Feitas", "Respostas do Bot", "Solicitação de Orçamento", "Interesse em Reunião"],
+        datasets: [{
+            label: "Engajamento do Usuário",
+            data: [totalPerguntas, totalRespostas, solicitacoesOrcamento ? 1 : 0, interesseReuniao ? 1 : 0],
+            backgroundColor: ["#4CAF50", "#FFC107", "#2196F3", "#FF5722"]
+        }]
+    };
+
+    // 🏗️ Configuração do Gráfico
+    const chart = new QuickChart();
+    chart.setConfig({
+        type: 'bar',
+        data: {
+          labels: ['Engajamento', 'Dúvidas', 'Perfil Técnico'],
+          datasets: [
+            {
+              label: 'Análise do Cliente',
+              data: [
+                parseInt(analise.engajamento?.split("/")[0]) || 0,
+                parseInt(analise.duvidas) || 0,
+                analise.perfil === "Técnico" ? 8 : (analise.perfil === "Intermediário" ? 5 : 2) // Escala de 0 a 10
+              ],
+              backgroundColor: ['#4CAF50', '#FFC107', '#2196F3']
+            }
+          ]
+        },
+        options: {
+          title: {
+            display: true,
+            text: '📊 Análise Inteligente do Cliente - ExaBot'
+          },
+          legend: {
+            display: false
+          },
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true,
+                stepSize: 1,
+                max: 10
+              }
+            }]
+          }
+        }
+      });
+    
+
+    chart.setWidth(500).setHeight(300).setBackgroundColor('white');
+
+    // 🔹 Retorna a URL do gráfico gerado
+    return chart.getUrl();
+}
+
+
         // 🔹 Endpoint principal do chatbot
         app.post('/chatbot', async (req, res) => {
         try {
@@ -236,17 +415,20 @@ if (mensagemExpirada) {
     let resposta = mensagemExpirada; // Copia a mensagem
     mensagemExpirada = null; // Reseta para evitar repetições
 
-    return res.json(resposta); // Envia a mensagem salva ao usuário
+
+    return res.json({ resposta }); // 🔍 Envia corretamente no formato JSON
 }
 
-
-        // 🔹 Criar variável global para armazenar histórico da conversa
+// 🔹 Garante que o histórico está inicializado
 if (!dadosUsuarios.historico) {
     dadosUsuarios.historico = [];
 }
 
-// 🔹 Armazenar a nova mensagem no histórico
-dadosUsuarios.historico.push(mensagem);
+
+// 🔹 Salva a mensagem do usuário no histórico
+if (modoOrcamento && mensagem.trim()) {
+    dadosUsuarios.historico.push({ role: 'user', content: mensagem.trim() });
+}
 
 
         // 🔹 Verifica se o usuário pediu um orçamento (mas só ativa se ainda não estiver no modo orçamento)
@@ -273,8 +455,7 @@ timeoutOrcamento = setTimeout(() => {
             ]
         };
     }
-}, 180000); // 3 minutos (180000 milissegundos)
-
+}, 240000); // 4 minutos (240000 milissegundos)
 
 
     return res.json({
@@ -372,7 +553,8 @@ if (modoOrcamento && !dadosUsuarios.servicoSelecionado) {
             perguntasDinamicas: [
                 "Como posso solicitar um orçamento?",
                 "Quais são os serviços oferecidos pela EXA?",
-                "A EXA oferece suporte técnico?"
+
+                "Vocês trabalham com projetos de subestações de energia?"
             ]
         });
     }
@@ -531,13 +713,22 @@ if (modoOrcamento && (dadosUsuarios.telefone || dadosUsuarios.email)) {
     
     // Se o estado já estiver em "DUVIDA_PENDING" (caso o usuário forneça o texto da dúvida)
     if (dadosUsuarios.estado === "DUVIDA_PENDING") {
-      dadosUsuarios.duvida = mensagem.trim();
-      dadosUsuarios.estado = "DUVIDA_DONE";
-    }
+
+        dadosUsuarios.duvida = mensagem.trim();
+      
+        // 🔹 Salva a dúvida no histórico como mensagem do usuário
+        if (modoOrcamento && mensagem.trim()) {
+            dadosUsuarios.historico.push({ role: 'user', content: mensagem.trim() });
+          }
+          
+      
+        dadosUsuarios.estado = "DUVIDA_DONE";
+      }
+      
     
     // Quando o estado é "DUVIDA_DONE", envia o e-mail com os dados coletados e reseta o fluxo
 if (dadosUsuarios.estado === "DUVIDA_DONE") {
-
+     
     // 🔹 Cancela o temporizador quando o usuário finaliza o orçamento
     if (timeoutOrcamento) clearTimeout(timeoutOrcamento); 
     timeoutOrcamento = null; // Remove a referência ao temporizador
@@ -564,13 +755,16 @@ if (dadosUsuarios.estado === "DUVIDA_DONE") {
       try {
         console.log("📤 Enviando e-mail...");
         await enviarEmail({ 
-          nome: nomeTemp, 
-          telefone: telefoneTemp,
-          email: emailTemp,
-          servico: servicoTemp,
-          duvida: duvidaTemp,
-          resumo: resumoConversa
-        });
+
+            nome: nomeTemp, 
+            telefone: telefoneTemp,
+            email: emailTemp,
+            servico: servicoTemp,
+            duvida: duvidaTemp,
+            resumo: resumoConversa,
+            historico: dadosUsuarios.historico // ✅ Adiciona o histórico completo
+          });
+          
         console.log("✅ E-mail enviado com sucesso!");
       } catch (error) {
         console.error("❌ Erro ao enviar o e-mail:", error);
@@ -581,6 +775,8 @@ if (dadosUsuarios.estado === "DUVIDA_DONE") {
       }
       
       // Resetar os dados e voltar ao modo normal
+
+      dadosUsuarios.historico = [];
       dadosUsuarios = {};
       modoOrcamento = false;
       return res.json({
@@ -842,6 +1038,7 @@ try {
     console.log("🔹 Resposta bruta da OpenAI:", data.choices[0].message.content);
 
     let responseText = data.choices[0].message.content.trim();
+    let respostaFinal = responseText;
 
     // Verifica se a resposta está no formato JSON válido
     if (responseText.startsWith('{') && responseText.endsWith('}')) {
@@ -854,77 +1051,66 @@ try {
             "essa pergunta foge do escopo", "não tenho essa informação",
             "consulte um especialista", "não possuo dados sobre isso"
         ];
-        
-        perguntasDinamicas = perguntasDinamicas.filter(pergunta => 
+
+        perguntasDinamicas = perguntasDinamicas.filter(pergunta =>
             !respostasInvalidas.some(frase => pergunta.toLowerCase().includes(frase))
         );
-        
 
-
-        // 🔹 Remove perguntas duplicadas
         perguntasDinamicas = [...new Set(perguntasDinamicas)];
 
-        // 🔹 Verifica se a resposta contém uma despedida ou indicação de fim de atendimento
-const palavrasDespedida = ["Até mais", "Até logo", "orçamento", "8h às 17h", "podemos ajudar mais tarde"];
-let respostaFinal = responseJson.resposta || "Desculpe, só posso responder perguntas sobre a EXA Engenharia.";
+        const palavrasDespedida = ["Até mais", "Até logo", "orçamento", "8h às 17h", "podemos ajudar mais tarde"];
+        respostaFinal = responseJson.resposta || "Desculpe, só posso responder perguntas sobre a EXA Engenharia.";
 
-// 🔹 Se a resposta indicar uma despedida, **não gerar perguntas dinâmicas**
-let gerarPerguntas = !palavrasDespedida.some(palavra => respostaFinal.toLowerCase().includes(palavra));
+        let gerarPerguntas = !palavrasDespedida.some(palavra => respostaFinal.toLowerCase().includes(palavra));
 
-if (gerarPerguntas && perguntasDinamicas.length === 0 && responseJson.resposta) {
-    const novaPergunta = await gerarPerguntasAutomaticas(responseJson.resposta);
-    if (novaPergunta.length > 0) {
-        perguntasDinamicas = novaPergunta;
-    }
-}
+        if (gerarPerguntas && perguntasDinamicas.length === 0 && responseJson.resposta) {
+            const novaPergunta = await gerarPerguntasAutomaticas(responseJson.resposta);
+            if (novaPergunta.length > 0) {
+                perguntasDinamicas = novaPergunta;
+            }
+        }
 
-
-// 🔹 Se a resposta for vazia ou irrelevante, gera uma resposta alternativa relevante
-if (!respostaFinal || respostaFinal.includes("Desculpe")) {
-    respostaFinal = `
-    Caso precise, você pode entrar em contato com a EXA Engenharia pelo  
-
-    📞 **Telefone:** (81) 99996-5585  
-    ✉️ **E-mail:** contato@exaengenharia.com  
-    `;
-
-    // 🔹 Reseta as perguntas dinâmicas para sugestões padrão ao final
-    perguntasDinamicas = [
-        "Quais serviços a EXA oferece?",
-        "Qual seria o portfólio da EXA?",
-        "Como faço para contratar um serviço?"
-    ];
-}
-
-// 🔹 Retorna a resposta final com perguntas dinâmicas (caso estejam ativadas)
-return res.json({
-    resposta: respostaFinal,
-    perguntasDinamicas: perguntasDinamicas.length > 0 ? perguntasDinamicas : []
-});
+        if (!respostaFinal || respostaFinal.includes("Desculpe")) {
+            respostaFinal = `
+            Caso precise, você pode entrar em contato com a EXA Engenharia pelo  
 
 
-// 🔹 Adiciona a sugestão de digitação caso existam perguntas dinâmicas e não seja um fim de conversa
-let sugestaoDigitar = "";
-if (gerarPerguntas && perguntasDinamicas.length > 0) {
-    sugestaoDigitar = "Caso tenha uma dúvida mais específica, digite abaixo ou clique em uma das opções acima. 📌";
-}
+            📞 **Telefone:** (81) 99996-5585  
+            ✉️ **E-mail:** contato@exaengenharia.com  
+            `;
+            perguntasDinamicas = [
+                "Quais serviços a EXA oferece?",
+                "Qual seria o portfólio da EXA?",
+                "Como faço para contratar um serviço?"
+            ];
+        }
 
-return res.json({
-    resposta: respostaFinal,
-    perguntasDinamicas: gerarPerguntas ? perguntasDinamicas : [],
-    sugestaoDigitar
-});
+        const respostaParaRetorno = {
+            resposta: respostaFinal,
+            perguntasDinamicas: perguntasDinamicas.length > 0 ? perguntasDinamicas : []
+        };
 
+        let sugestaoDigitar = "";
+        if (gerarPerguntas && perguntasDinamicas.length > 0) {
+            sugestaoDigitar = "Caso tenha uma dúvida mais específica, digite abaixo ou clique em uma das opções acima. 📌";
+        }
 
+        // Salva a resposta do bot no histórico
+        if (modoOrcamento && respostaFinal) {
+            dadosUsuarios.historico.push({ role: 'assistant', content: respostaFinal });
+        }
+
+        return res.json({
+            ...respostaParaRetorno,
+            sugestaoDigitar
+        });
     } else {
-        // Se a resposta não estiver em JSON válido, retorna um fallback
         console.warn("⚠️ Resposta inesperada da OpenAI, retornando fallback.");
         return res.json({
             resposta: responseText,
             perguntasDinamicas: []
         });
     }
-
 } catch (error) {
     console.error("❌ Erro ao processar JSON da OpenAI:", error);
     return res.json({
