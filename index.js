@@ -157,10 +157,14 @@ const transporter = nodemailer.createTransport({
     port: parseInt(process.env.EMAIL_PORT),
     secure: process.env.EMAIL_SECURE === "true", // false para STARTTLS
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
-  });
+    tls: {
+        rejectUnauthorized: false, // Necessário para evitar erro de certificado no Render
+    },
+});
+
   
 
 // 🔹 Função para enviar e-mail com os dados coletados
