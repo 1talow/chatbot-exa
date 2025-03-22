@@ -1221,7 +1221,7 @@ document.addEventListener("DOMContentLoaded", function () {
         inputField.value = "";
 
         try {
-            const response = await fetch("http://localhost:3000/chatbot", {
+            const response = await fetch("https://chatbot-exa.onrender.com/chatbot", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1967,7 +1967,7 @@ document.addEventListener('click', (event) => {
     chatMessages.appendChild(typingIndicator);
 
     try {
-        const response = await fetch('http://localhost:3000/chatbot', {
+        const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mensagem: message })
