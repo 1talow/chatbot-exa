@@ -154,16 +154,14 @@ async function traduzirServicos(idiomaDetectado) {
 
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT),
-    secure: process.env.EMAIL_SECURE === "true", // false para STARTTLS
+    port: 465,
+    secure: true, // SSL direto
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
-    tls: {
-        rejectUnauthorized: false, // Necessário para evitar erro de certificado no Render
-    },
-});
+  });
+  
 
   
 
