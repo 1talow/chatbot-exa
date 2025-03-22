@@ -154,14 +154,15 @@ async function traduzirServicos(idiomaDetectado) {
 
 // 🔹 Configuração do Nodemailer para envio de e-mails
 const transporter = nodemailer.createTransport({
-    host: "smtp.titan.email",
-    port: 465,
-    secure: true, // true para SSL/TLS
+    host: process.env.EMAIL_HOST || "smtp.titan.email",
+    port: parseInt(process.env.EMAIL_PORT, 10) || 465,
+    secure: process.env.EMAIL_SECURE === "true", // true se for "true" no .env
     auth: {
-        user: process.env.EMAIL_USER, // E-mail de envio
-        pass: process.env.EMAIL_PASS, // Senha ou senha de aplicativo
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
 });
+
 
 // 🔹 Função para enviar e-mail com os dados coletados
 async function enviarEmail(dados) {
