@@ -595,7 +595,7 @@ if (!modoOrcamento && mensagem.toLowerCase() === "não") {
 
 
 // 🔹 Validação dinâmica de telefone: aceita formatos variados com ou sem (), -, espaço
-const regexTelefone = /^(\(?\d{2}\)?\s?)?(\d{4,5})[-.\s]?(\d{4})$/;
+const regexTelefone = /^(\(?\d{2}\)?[\s-]?)?\d{4,5}[-\s]?\d{4}$/;
 
 // 🔹 Validação de e-mail: exige um formato correto
 const regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -623,13 +623,21 @@ if (matchTelefone && !mensagem.includes("@")) { // Garante que não seja um e-ma
     }
 }
 
-// 🔹 Se o usuário digitar um número curto ou inválido, peça novamente
-if (/\d+/.test(mensagem)) {
-    return res.json({
-        resposta: "❌ Esse telefone não parece válido. Poderia informar um número com **DDD** correto? Exemplo: (99) 99999-9999 📱",
-        perguntasDinamicas: []
-    });
-}
+// 🔹 Verifica se o bot está esperando um telefone e a mensagem é um número solto
+if (
+    modoOrcamento &&
+    !dadosUsuarios.telefone &&
+    !dadosUsuarios.email &&
+    dadosUsuarios.estado !== "NOME_COLETA" &&
+    regexTelefone.test(mensagem.trim()) === false &&
+    /\d+/.test(mensagem)
+  ) {
+      return res.json({
+          resposta: "❌ Esse telefone não parece válido. Poderia informar um número com **DDD** correto? Exemplo: (99) 99999-9999 📱",
+          perguntasDinamicas: []
+      });
+  }
+  
 
 // 🔹 Lista de mensagens irrelevantes dentro do orçamento
 const mensagensIrrelevantes = ["sim", "não", "ok", "entendi", "talvez", "acho que sim", "acho que não"];
