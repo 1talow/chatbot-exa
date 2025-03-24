@@ -413,13 +413,16 @@ async function gerarGraficoEngajamento(historico) {
         const { mensagem } = req.body;
 
         // 🔹 Se houver uma mensagem salva de expiração do orçamento, envia antes de processar qualquer outra coisa
-if (mensagemExpirada) {
-    let resposta = mensagemExpirada; // Copia a mensagem
-    mensagemExpirada = null; // Reseta para evitar repetições
-
-
-    return res.json({ resposta }); // 🔍 Envia corretamente no formato JSON
-}
+        if (mensagemExpirada) {
+            const respostaTemp = mensagemExpirada;
+            mensagemExpirada = null;
+        
+            return res.json({
+                resposta: respostaTemp.resposta,
+                perguntasDinamicas: respostaTemp.perguntasDinamicas || []
+            });
+        }
+        
 
 // 🔹 Garante que o histórico está inicializado
 if (!dadosUsuarios.historico) {
@@ -434,8 +437,8 @@ if (modoOrcamento && mensagem.trim()) {
 
 
         // 🔹 Verifica se o usuário pediu um orçamento (mas só ativa se ainda não estiver no modo orçamento)
-const palavrasChaveOrcamento = /orçamento|cotação|contratar|custo|preço|valor/i;
-if (!modoOrcamento && palavrasChaveOrcamento.test(mensagem)) {
+        const palavrasChaveOrcamento = /\b(orçamento|cotação|contratar|custo|preço|valor|quanto custa|quanto sai|quanto fica|quanto é|quanto seria|quero contratar|desejo orçamento)\b/i;
+    if (!modoOrcamento && palavrasChaveOrcamento.test(mensagem)) {
     modoOrcamento = true; // Ativa o modo orçamento se ainda não estiver ativo
 
 // 🔹 Inicia o temporizador de 3 minutos
@@ -457,7 +460,7 @@ timeoutOrcamento = setTimeout(() => {
             ]
         };
     }
-}, 240000); // 4 minutos (240000 milissegundos)
+}, 240000); // 4 minutos (240.000 ms)
 
 
     return res.json({
