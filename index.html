@@ -25,11 +25,21 @@
             align-items: center;
             cursor: pointer;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Dá um efeito de profundidade */
-            animation: bounce 2s infinite;
             font-size: 24px;
             transition: opacity 0.3s ease, transform 0.3s ease;
             
         }
+
+        #chat-widget {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#chat-widget.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 
         #chat-widget.hidden {
             display: none;
@@ -2218,6 +2228,16 @@ function digitarPerguntas() {
             }, 2000);
         }
 
+           /***************************************************************
+         *               MODIFICA O ATRASO DE ENTRADA DO CHATBOT/EXABOT
+         ***************************************************************/
+        window.addEventListener('DOMContentLoaded', () => {
+    const widget = document.getElementById('chat-widget');
+    setTimeout(() => {
+      widget.classList.add('visible');
+    }, 1200); // atraso sutil pro efeito ficar suave
+  });
+        
         /***************************************************************
          *               "PING" NO SERVIDOR
          ***************************************************************/
