@@ -511,29 +511,40 @@
         /* ---------------------------------------------------------------------
            BALÃO DE PENSAMENTO QUANDO MINIMIZADO (Chatbot depois dos 3 segundos)
         ------------------------------------------------------------------------ */
+        /* Estilo do balão com seta */
         #thought-bubble {
-            position: fixed;
-            bottom: 140px;
-            right: 50px;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            padding: 5px 7px;
-            max-width: 250px;
-            font-size: 16px;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-        #thought-bubble::after {
-            content: "";
-            position: absolute;
-            bottom: -10px;
-            right: 15px;
-            border-width: 10px;
-            border-style: solid;
-            border-color: white transparent transparent transparent;
-        }
+  position: fixed;
+  bottom: 140px;
+  right: 50px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 15px 15px 0 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 10px 15px;
+  max-width: 250px;
+  font-size: 16px;
+  display: none;
+  animation: fadeIn 0.5s ease;
+  z-index: 999;
+}
+
+#thought-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  right: 25px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: white transparent transparent transparent;
+}
+
+
+/* Estilo do texto digitado */
+#bubble-typing-text {
+  white-space: pre-line;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+}
         #thought-bubble-close {
             position: absolute;
             top: 5px;
@@ -1058,10 +1069,10 @@
   </div>
   
 
-    <div id="thought-bubble">
-        <button id="thought-bubble-close">&times;</button>
-        <p>Olá! 👋 Sou o Exabot, assistente virtual da EXA Engenharia. Tem alguma dúvida ou precisa de informações? Pergunte agora!💡</p>
-    </div>
+  <div id="thought-bubble">
+    <button id="thought-bubble-close">&times;</button>
+    <p id="bubble-typing-text"></p>
+  </div>
 
     <div id="chat-box" class="light-theme hidden"><!-- começa oculto -->
         <div id="chat-box-header" role="banner" aria-label="Cabeçalho do chat">
@@ -1171,7 +1182,39 @@ function mostrarWhatsApp() {
     }
 }
 
+/***************************************************************
+         *                   Balão de boas-vindas EXAbot
+***************************************************************/
+function digitarBoasVindasNoBubble(texto, velocidade = 40) {
+  const elemento = document.getElementById("bubble-typing-text");
+  let i = 0;
+  elemento.textContent = "";
 
+  function digitar() {
+    if (i < texto.length) {
+      elemento.textContent += texto.charAt(i);
+      i++;
+      setTimeout(digitar, velocidade);
+    }
+  }
+
+  digitar();
+}
+
+setTimeout(() => {
+  const bubble = document.getElementById("thought-bubble");
+  if (!document.getElementById("chat-box").classList.contains("visible")) {
+    bubble.style.display = "block";
+    digitarBoasVindasNoBubble(
+      "Olá! 👋 Sou o Exabot, assistente virtual da EXA Engenharia.\nTem alguma dúvida ou precisa de informações? Pergunte agora!💡"
+    );
+  }
+}, 3000);
+
+// Fechar o balão
+thoughtBubbleClose.addEventListener("click", () => {
+  document.getElementById("thought-bubble").style.display = "none";
+});
 
 
 /*************************************************************** 
