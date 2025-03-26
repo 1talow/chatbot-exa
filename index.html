@@ -527,6 +527,7 @@
   animation: fadeIn 0.5s ease;
   z-index: 999;
   line-height: justify;
+  transform-origin: bottom right;
 }
 
 #thought-bubble::after {
@@ -565,6 +566,24 @@
                 transform: translateY(0);
             }
         }
+
+        /* ----------------------------------------------------------
+           ANIMAÇÃO GÊNIO PENSAMENTO EXABOT/CHATBOT
+        ---------------------------------------------------------- */
+        @keyframes shrinkToBot {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(45px, 60px) scale(0.1);
+    opacity: 0;
+  }
+}
+
+#thought-bubble.closing {
+  animation: shrinkToBot 0.6s ease forwards;
+}
 
         /* ----------------------------------------------------------
            ANIMAÇÃO "DESINTEGRAR"
@@ -1213,9 +1232,17 @@ setTimeout(() => {
 }, 3000);
 
 // Fechar o balão
-thoughtBubbleClose.addEventListener("click", () => {
-  document.getElementById("thought-bubble").style.display = "none";
+const bubble = document.getElementById("thought-bubble");
+const closeBtn = document.getElementById("thought-bubble-close");
+
+closeBtn.addEventListener("click", () => {
+  bubble.classList.add("closing");
+  setTimeout(() => {
+    bubble.style.display = "none";
+    bubble.classList.remove("closing"); // limpa a classe depois
+  }, 600); // mesmo tempo da animação
 });
+
 
 
 /*************************************************************** 
@@ -2002,10 +2029,7 @@ document.addEventListener('click', (event) => {
             }
         }, 3000);
 
-        thoughtBubbleClose.addEventListener('click', () => {
-            thoughtBubble.style.display = 'none';
-        });
-
+    
         /***************************************************************
          *               DETECÇÃO DE SCROLL PARA NÃO FORÇAR AUTO-SCROLL
          ***************************************************************/
