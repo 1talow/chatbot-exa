@@ -13,22 +13,22 @@
            ÍCONE DO CHAT (WIDGET Chatbot)
         ---------------------------------------------------------- */
         #chat-widget {
-            background-size: cover;
-            position: fixed;
-            bottom: 80px;
-            right: 5px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Dá um efeito de profundidade */
-            font-size: 24px;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            
-        }
+  position: fixed;
+  bottom: 80px;
+  right: 5px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px); /* entrada suave */
+}
 
         #chat-widget {
   opacity: 0;
@@ -46,7 +46,8 @@
         }
 
         #chat-widget:hover {
-            animation: none;
+            transform: scale(1.1);
+            filter: brightness(0.95);
         }
 
         @keyframes bounce {
@@ -973,36 +974,46 @@
 }
 
 #whatsapp-button {
-    position: fixed;
-    bottom: 15px; /* 🔹 Ajuste conforme necessário */
-    right: 5px;
-    width: 60px;
-    height: 60px;
-    background-color: #25D366; /* Cor do WhatsApp */
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    z-index: 1000; /* Mantém visível sobre os outros elementos */
-    opacity: 0; /* Começa invisível */
-    transition: transform 0.3s ease, filter 0.3s ease;
+  position: fixed;
+  bottom: 15px;
+  right: 5px;
+  width: 60px;
+  height: 60px;
+  background-color: #25D366;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 1000;
+  opacity: 0;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-/* Quando o ícone deve aparecer */
+#whatsapp-button:hover {
+  transform: scale(1.1) !important; /* Aumenta o botão suavemente */
+  filter: brightness(0.9) !important;
+}
+
+#whatsapp-button img {
+  width: 35px;
+  height: 35px;
+}
+
+
 #whatsapp-button.show {
     opacity: 1;
     animation: pingPongBounce 1.5s ease-out 1 forwards;
 }
 
 
-
 /* Efeito ao passar o mouse */
 #whatsapp-button:hover {
-    transform: scale(1.1); /* Pequeno zoom */
-    filter: brightness(0.8); /* Escurece um pouco */
+  transform: scale(1.1) !important;
+  filter: brightness(0.9) !important;
 }
+
 
 #whatsapp-button.hidden {
     pointer-events: none;
@@ -1014,6 +1025,11 @@
 #whatsapp-button img {
     width: 35px;
     height: 35px;
+    transition: transform 0.3s ease;
+}
+
+#whatsapp-button:hover img {
+    transform: scale(1.2);
 }
 
 #whatsapp-icon {
@@ -1037,12 +1053,10 @@
     <div id="chat-widget-notification">1</div>
   </div>  
   
-    <div id="whatsapp-button">
-        <a href="https://api.whatsapp.com/message/GYKWFB36MW6SO1?autoload=1&app_absent=0" target="_blank">
-            <img src="https://1talow.github.io/chatbot-exa/assets/WhatsApp_icon.png
-            " alt="WhatsApp">
-        </a>
-    </div>
+  <div id="whatsapp-button" onclick="window.open('https://api.whatsapp.com/message/GYKWFB36MW6SO1?autoload=1&app_absent=0', '_blank')">
+    <img src="https://1talow.github.io/chatbot-exa/assets/WhatsApp_icon.png" alt="WhatsApp">
+  </div>
+  
 
     <div id="thought-bubble">
         <button id="thought-bubble-close">&times;</button>
@@ -2229,7 +2243,7 @@ function digitarPerguntas() {
         }
 
            /***************************************************************
-         *               MODIFICA O ATRASO DE ENTRADA DO CHATBOT/EXABOT
+         *               MODIFICA O ATRASO DE ENTRADA CHATBOT/EXABOT
          ***************************************************************/
         window.addEventListener('DOMContentLoaded', () => {
     const widget = document.getElementById('chat-widget');
