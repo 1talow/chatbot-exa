@@ -528,6 +528,7 @@
   z-index: 999;
   line-height: justify;
   transform-origin: bottom right;
+  animation: thoughtBubbleIn 0.4s ease-out;
 }
 
 #thought-bubble::after {
@@ -547,15 +548,34 @@
   font-family: Arial, sans-serif;
   font-size: 15px;
 }
-        #thought-bubble-close {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-        }
+#thought-bubble-close {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 20px;
+  color: #888;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+  font-weight: bold;
+  z-index: 2;
+}
+
+#thought-bubble-close:hover {
+  color: #d00;
+  transform: scale(1.2);
+}
+
+@keyframes thoughtBubbleIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -1090,9 +1110,10 @@
   
 
   <div id="thought-bubble">
-    <button id="thought-bubble-close">&times;</button>
+    <span id="thought-bubble-close">×</span>
     <p id="bubble-typing-text"></p>
   </div>
+  
 
     <div id="chat-box" class="light-theme hidden"><!-- começa oculto -->
         <div id="chat-box-header" role="banner" aria-label="Cabeçalho do chat">
@@ -1860,20 +1881,55 @@ function minimizeChat() {
   }
 
   chatBox.addEventListener('animationend', () => {
-    chatBox.classList.remove('closing');
-    chatBox.classList.add('hidden');
-    isAnimating = false;
+  chatBox.classList.remove('closing');
+  chatBox.classList.add('hidden');
+  isAnimating = false;
 
-    // Reexibe o widget do chat
-    chatWidget.classList.remove('hidden');
+  // Reexibe o widget do chat
+  chatWidget.classList.remove('hidden');
 
-    // Mostra o ícone do WhatsApp com 1 segundo de atraso
-    mostrarWhatsApp();
-  }, { once: true });
+  // Mostra o ícone do WhatsApp com 1 segundo de atraso
+  mostrarWhatsApp();
+
+  fraseLiberada = true; // libera a próxima frase
+  // ⏱️ Após minimizar, exibe a próxima frase automaticamente
+  exibirNovaFraseExaBot();// exibe se estiver liberado
+}, { once: true });
+
 
   if (responsePending) {
     notification.style.display = "flex";
   }
+}
+
+// Lista de frases do ExaBot após o fechamento do chat
+const frasesExaBot = [
+  "Ah! Se precisar, estarei aqui no cantinho 😄",
+  "Posso te ajudar com dúvidas técnicas também!",
+  "Gostaria de solicitar um orçamento? É só me pedir!",
+  "Logo abaixo está nosso WhatsApp para falar com um especialista."
+];
+
+let indiceFraseAtual = 0; // Controla qual frase deve ser exibida a seguir
+let fraseLiberada = false;
+
+function exibirNovaFraseExaBot() {
+  if (!fraseLiberada) return;
+
+  setTimeout(() => {
+    if (!chatBox.classList.contains("visible")) {
+      thoughtBubble.style.display = "block";
+      digitarBoasVindasNoBubble(frasesExaBot[indiceFraseAtual]);
+      indiceFraseAtual++;
+
+      // Reinicia as frases se todas já foram exibidas
+      if (indiceFraseAtual >= frasesExaBot.length) {
+        indiceFraseAtual = 0;
+      }
+
+      fraseLiberada = false;
+    }
+  }, 3000);
 }
 
         /***************************************************************
