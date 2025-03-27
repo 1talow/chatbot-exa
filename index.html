@@ -523,13 +523,16 @@
   padding: 12px 18px;
   max-width: 300px;
   font-size: 16px;
-  display: none;
-  animation: fadeIn 0.5s ease;
+  display: block; /* Mantém block para evitar reflow inesperado */
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden; /* 👉 impede o flash */
   z-index: 999;
   line-height: justify;
   transform-origin: bottom right;
   animation: thoughtBubbleIn 0.4s ease-out;
 }
+
 
 #thought-bubble::after {
   content: "";
@@ -1228,17 +1231,23 @@ function mostrarWhatsApp() {
 ***************************************************************/
 function digitarBoasVindasNoBubble(texto, velocidade = 40) {
   const elemento = document.getElementById("bubble-typing-text");
+
+  // 🔓 Libera o balão para qualquer mensagem
+  thoughtBubble.classList.remove("oculto-inicialmente");
+  thoughtBubble.style.display = "block";
+  thoughtBubble.style.opacity = "1";
+  thoughtBubble.style.pointerEvents = "auto";
+  thoughtBubble.style.visibility = "visible";
+
   const notificationSound = document.getElementById("notification-sound");
   const keyboardSound = document.getElementById("keyboard-sound");
 
   let i = 0;
   elemento.textContent = "";
 
-  // 🔊 Toca o som de notificação
   notificationSound.currentTime = 0;
   notificationSound.play();
 
-  // 🎶 Começa o som de digitação
   keyboardSound.currentTime = 0;
   keyboardSound.play();
 
@@ -1248,7 +1257,6 @@ function digitarBoasVindasNoBubble(texto, velocidade = 40) {
       i++;
       setTimeout(digitar, velocidade);
     } else {
-      // 🛑 Para o som de teclado ao terminar
       keyboardSound.pause();
       keyboardSound.currentTime = 0;
     }
@@ -1257,18 +1265,31 @@ function digitarBoasVindasNoBubble(texto, velocidade = 40) {
   digitar();
 }
 
+
+
 function exibirFraseBoasVindasInicial() {
-  setTimeout(() => {
-    if (!chatBox.classList.contains("visible")) {
-      thoughtBubble.style.display = "block";
-      digitarBoasVindasNoBubble(
-        "Olá! 👋 Sou o Exabot, assistente virtual da EXA Engenharia.\nTem alguma dúvida ou precisa de informações? Pergunte agora!💡"
-      );
-    }
-  }, 3000);
+  const textoBoasVindas = "Olá! 👋 Sou o Exabot, assistente virtual da EXA Engenharia.\nTem alguma dúvida ou precisa de informações? Pergunte agora!💡";
+
+  if (!sessionStorage.getItem("saudacaoExibida")) {
+    setTimeout(() => {
+      if (!chatBox.classList.contains("visible")) {
+        sessionStorage.setItem("saudacaoExibida", "true");
+
+        // Remove a classe que oculta o balão antes de mostrar
+        thoughtBubble.classList.remove("oculto-inicialmente");
+
+        document.getElementById("bubble-typing-text").textContent = "";
+        digitarBoasVindasNoBubble(textoBoasVindas);
+      }
+    }, 3000);
+  } else {
+    // Garante que o balão permaneça oculto se já foi exibido
+    thoughtBubble.classList.add("oculto-inicialmente");
+  }
 }
 
 exibirFraseBoasVindasInicial();
+
 
 
 // Fechar o balão
@@ -1279,8 +1300,10 @@ closeBtn.addEventListener("click", () => {
   bubble.classList.add("closing");
   setTimeout(() => {
     bubble.style.display = "none";
-    bubble.classList.remove("closing"); // limpa a classe depois
-  }, 600); // mesmo tempo da animação
+    bubble.style.opacity = "0";
+    bubble.style.pointerEvents = "none";
+    bubble.classList.remove("closing");
+  }, 600);
 });
 
 
@@ -1937,11 +1960,12 @@ function exibirNovaFraseExaBot() {
 
   setTimeout(() => {
     if (!chatBox.classList.contains("visible")) {
-      thoughtBubble.style.display = "block";
+      // Limpa texto e chama digitação com a frase certa
+      document.getElementById("bubble-typing-text").textContent = "";
       digitarBoasVindasNoBubble(frasesExaBot[indiceFraseAtual]);
+
       indiceFraseAtual++;
 
-      // Reinicia as frases se todas já foram exibidas
       if (indiceFraseAtual >= frasesExaBot.length) {
         indiceFraseAtual = 0;
       }
