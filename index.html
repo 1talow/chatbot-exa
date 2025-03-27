@@ -1228,29 +1228,48 @@ function mostrarWhatsApp() {
 ***************************************************************/
 function digitarBoasVindasNoBubble(texto, velocidade = 40) {
   const elemento = document.getElementById("bubble-typing-text");
+  const notificationSound = document.getElementById("notification-sound");
+  const keyboardSound = document.getElementById("keyboard-sound");
+
   let i = 0;
   elemento.textContent = "";
+
+  // 🔊 Toca o som de notificação
+  notificationSound.currentTime = 0;
+  notificationSound.play();
+
+  // 🎶 Começa o som de digitação
+  keyboardSound.currentTime = 0;
+  keyboardSound.play();
 
   function digitar() {
     if (i < texto.length) {
       elemento.textContent += texto.charAt(i);
       i++;
       setTimeout(digitar, velocidade);
+    } else {
+      // 🛑 Para o som de teclado ao terminar
+      keyboardSound.pause();
+      keyboardSound.currentTime = 0;
     }
   }
 
   digitar();
 }
 
-setTimeout(() => {
-  const bubble = document.getElementById("thought-bubble");
-  if (!document.getElementById("chat-box").classList.contains("visible")) {
-    bubble.style.display = "block";
-    digitarBoasVindasNoBubble(
-      "Olá! 👋 Sou o Exabot, assistente virtual da EXA Engenharia.\nTem alguma dúvida ou precisa de informações? Pergunte agora!💡"
-    );
-  }
-}, 3000);
+function exibirFraseBoasVindasInicial() {
+  setTimeout(() => {
+    if (!chatBox.classList.contains("visible")) {
+      thoughtBubble.style.display = "block";
+      digitarBoasVindasNoBubble(
+        "Olá! 👋 Sou o Exabot, assistente virtual da EXA Engenharia.\nTem alguma dúvida ou precisa de informações? Pergunte agora!💡"
+      );
+    }
+  }, 3000);
+}
+
+exibirFraseBoasVindasInicial();
+
 
 // Fechar o balão
 const bubble = document.getElementById("thought-bubble");
@@ -2392,5 +2411,8 @@ function digitarPerguntas() {
         setTimeout(() => atualizarStatus('processando'), 2000);
         setTimeout(() => atualizarStatus('online'), 5000);
     </script>
+
+<audio id="notification-sound" src="assets/notification-sound.mp3" preload="auto"></audio>
+<audio id="keyboard-sound" src="assets/mechanical-keyboard-typing.mp3" preload="auto" loop></audio>
 </body>
 </html>
