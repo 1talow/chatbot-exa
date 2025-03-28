@@ -1022,6 +1022,57 @@ async function detectarIdioma(mensagem) {
     }
 }
 
+
+function organizarTopicos(resposta) {
+    let intro = "";
+    let itens = [];
+    let fraseFinal = "";
+
+    const linhas = resposta.split("\n").map(l => l.trim()).filter(Boolean);
+
+    for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i];
+
+        // Primeira linha que não começa com marcador é a introdução
+        if (!intro && !linha.startsWith("-") && !linha.startsWith("•")) {
+            intro = linha;
+            continue;
+        }
+
+        // Junta frases finais que vieram quebradas (ex: "Digite..." + "e eu explico...")
+        if (
+            linha.toLowerCase().startsWith("caso") ||
+            linha.toLowerCase().startsWith("digite") ||
+            linha.toLowerCase().startsWith("estou") ||
+            linha.toLowerCase().startsWith("se precisar") ||
+            linha.toLowerCase().includes("balão") ||
+            linha.includes("😀") ||
+            linha.length > 10 && !linha.startsWith("-") && !linha.startsWith("•")
+        ) {
+            fraseFinal += (fraseFinal ? " " : "") + linha;
+            continue;
+        }
+
+        // Remove duplicação de marcador e adiciona como item
+        const item = linha.replace(/^[-•\s]+/, "").trim();
+        if (item) itens.push(item);
+    }
+
+    const itensFormatados = itens.map(item => `• ${item}`).join("\n");
+
+    let respostaFinal = intro;
+    if (itens.length > 0) {
+        respostaFinal += `\n\n${itensFormatados}`;
+    }
+    if (fraseFinal.trim()) {
+        respostaFinal += `\n\n${fraseFinal.trim()}`;
+    }
+
+    return respostaFinal;
+}
+
+
+
 // 🔹 Faz a requisição para a OpenAI
 const resposta = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -1033,7 +1084,11 @@ const resposta = await fetch('https://api.openai.com/v1/chat/completions', {
         model: 'gpt-4o-mini',
         messages: [
             { role: 'system', content: prompt },
-            { role: 'user', content: mensagem }
+            { 
+                role: 'user', 
+                content: mensagem
+
+              }              
         ],
         max_tokens: 400,
         temperature: 0.7
@@ -1098,10 +1153,15 @@ try {
             ];
         }
 
-        const respostaParaRetorno = {
-            resposta: respostaFinal,
-            perguntasDinamicas: perguntasDinamicas.length > 0 ? perguntasDinamicas : []
-        };
+       // 🔹 Organiza tópicos antes de retornar ao usuário
+const respostaComTopicos = organizarTopicos(responseJson.resposta || "Desculpe, só posso responder perguntas sobre a EXA Engenharia.");
+
+const respostaParaRetorno = {
+    resposta: respostaComTopicos,
+    perguntasDinamicas: perguntasDinamicas.length > 0 ? perguntasDinamicas : []
+};
+
+
 
         let sugestaoDigitar = "";
         if (gerarPerguntas && perguntasDinamicas.length > 0) {
@@ -1113,10 +1173,15 @@ try {
             dadosUsuarios.historico.push({ role: 'assistant', content: respostaFinal });
         }
 
-        return res.json({
-            ...respostaParaRetorno,
-            sugestaoDigitar
-        });
+        // ✅ Organiza os tópicos se não estiverem organizados ainda
+respostaParaRetorno.resposta = organizarTopicos(respostaParaRetorno.resposta);
+
+// ✅ Retorna a resposta com sugestão
+return res.json({
+    ...respostaParaRetorno,
+    sugestaoDigitar
+});
+
     } else {
         console.warn("⚠️ Resposta inesperada da OpenAI, retornando fallback.");
         return res.json({

@@ -2276,13 +2276,23 @@ function renderizarTextoGradual(texto) {
         }
 
         function processarMarkdown(texto, tipo) {
-            // Só adiciona emojis nas respostas do ExaBot
-            if (tipo === "ExaBot") {
-                texto = adicionarEmojis(texto);
-            }
-            // Markdown: **palavra** => <b>palavra</b>
-            return texto.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+    if (tipo === "ExaBot") {
+        texto = adicionarEmojis(texto);
+
+        // Remove negrito de palavras muito curtas
+        texto = texto.replace(/\*\*(\w{1,2})\*\*/g, '$1');
+
+        // Markdown: **palavra** => <b>palavra</b>
+        texto = texto.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+
+        // Converte quebra de linha para <br> se houver bullets ou formatação por \n
+        if (texto.includes("\n")) {
+            texto = texto.replace(/\n/g, "<br>");
         }
+    }
+
+    return texto;
+}
 
         /***************************************************************
          *               PERGUNTAS PRÉ-DEFINIDAS
