@@ -906,18 +906,22 @@ Sobre a EXA Engenharia:
 
 🔹 Quando perguntarem sobre serviços, o ExaBot responderá com a lista completa e destacará os serviços em negrito:
 
- Cabeamento Estruturado
- Painéis de Telecomunicações
- CFTV
- Fibra Óptica
- Implantação de Sistemas
- Teleproteção Digital
- Automação
- Teleproteção Oplat
- Especificação Técnica
- WorkStatement
- Projeto Básico e Executivo
- Medição de Resistividade do Solo
+ A EXA Engenharia oferece os seguintes serviços:
+
+• **Cabeamento Estruturado**
+• **Painéis de Telecomunicações**
+• **CFTV**
+• **Fibra Óptica**
+• **Implantação de Sistemas**
+• **Teleproteção Digital**
+• **Automação**
+• **Teleproteção Oplat**
+• **Especificação Técnica**
+• **WorkStatement**
+• **Projeto Básico e Executivo**
+• **Medição de Resistividade do Solo**
+
+**Digite qual serviço acima você gostaria de saber mais, e eu explico em detalhes!**
 
  // 🔹 Responder sobre equipamentos utilizados nos serviços da EXA Engenharia
 Se perguntarem sobre equipamentos utilizados em um serviço específico, responda mencionando os principais equipamentos relacionados. 
@@ -1156,11 +1160,27 @@ try {
        // 🔹 Organiza tópicos antes de retornar ao usuário
 const respostaComTopicos = organizarTopicos(responseJson.resposta || "Desculpe, só posso responder perguntas sobre a EXA Engenharia.");
 
-const respostaParaRetorno = {
-    resposta: respostaComTopicos,
-    perguntasDinamicas: perguntasDinamicas.length > 0 ? perguntasDinamicas : []
-};
 
+// 🔹 Reforça negrito nos itens importantes mesmo se vierem com vírgula
+let respostaFinalFormatada = respostaComTopicos
+    .replace(/(?<!\*)\b(Cabeamento Estruturado)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Painéis de Telecomunicações)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(CFTV)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Fibra Óptica)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Implantação de Sistemas)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Teleproteção Digital)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Automação)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Teleproteção Oplat)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Especificação Técnica)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(WorkStatement)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Projeto Básico e Executivo)\b(?!\*)/gi, '**$1**')
+    .replace(/(?<!\*)\b(Medição de Resistividade do Solo)\b(?!\*)/gi, '**$1**');
+
+
+    const respostaParaRetorno = {
+        resposta: respostaFinalFormatada,
+        perguntasDinamicas: perguntasDinamicas.length > 0 ? perguntasDinamicas : []
+    };    
 
 
         let sugestaoDigitar = "";
