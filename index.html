@@ -736,7 +736,7 @@
         #chat-box.light-theme {
             --background-color: #f9f9f9;
             --text-color: #333;
-            --header-color: #314b73;
+            --header-color: #f1f1f1;
             --input-background: #ffffff;
             --input-text-color: #333;
             --button-background: #314b73;
@@ -790,7 +790,7 @@
 
         /* Status no tema claro */
         #chat-box.light-theme #chat-status {
-            background-color: #f1f1f1 !important;
+            background-color: #ffffff !important;
             border-bottom: 1px solid #ccc !important;
         }
 
@@ -1110,6 +1110,111 @@
     text-shadow: none !important;
 }
 
+/* Estilização do novo título */
+#chat-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#chat-title img {
+    transition: filter 0.3s ease;
+}
+
+/* Texto "Assistant" mais moderno e harmônico */
+#assistant-text {
+    font-size: 20px;
+    font-weight: 650;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    color: #314b73; /* cor padrão para tema claro */
+    text-shadow: none;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+    transition: all 0.3s ease;
+}
+
+#logo-exa {
+    height: 18px !important; /* 🔽 Antes era 28px ou 40px */
+    transition: all 0.3s ease;
+    margin-top: 1px; /* alinhamento fino com o texto */
+}
+
+/* Tema claro: azul escuro sem sombra */
+#chat-box.light-theme #assistant-text {
+    color: #314b73;
+    text-shadow: none;
+}
+
+/* Tema escuro: branco com leve suavidade */
+#chat-box.dark-theme #assistant-text {
+    color: white;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.2); /* sombra sutil só pra contraste */
+}
+
+/* Modo CLARO: deixar minimizar e engrenagem mais escuros */
+#chat-box.light-theme #minimize-chat,
+#chat-box.light-theme #settings-gear {
+    color: #1e3554 !important; /* Azul escuro ou cinza bem forte */
+    text-shadow: none !important;
+}
+
+#chat-box.light-theme #minimize-chat:hover,
+#chat-box.light-theme #settings-gear:hover {
+    color: #000 !important; /* Preto ao passar o mouse */
+}
+
+/* Sombra sutil abaixo da barra de status para uniformizar com o topo */
+#chat-status {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+}
+
+/* Sombra ou divisão sutil abaixo do cabeçalho do chat */
+#chat-box-header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* sombra sutil inferior */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* linha bem leve */
+    z-index: 2;
+}
+
+@keyframes revelarLogo {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#logo-exa.revelar {
+    animation: revelarLogo 0.6s ease-out forwards;
+}
+
+@keyframes revelarLogoTexto {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+#logo-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all 0.3s ease;
+}
+
+#logo-group.revelar {
+  animation: revelarLogoTexto 0.6s ease-out forwards;
+}
 
 
     </style>
@@ -1136,7 +1241,12 @@
 
     <div id="chat-box" class="light-theme hidden"><!-- começa oculto -->
         <div id="chat-box-header" role="banner" aria-label="Cabeçalho do chat">
-            <span>EXA Assistant</span>
+            <div id="chat-title" class="titulo-animado">
+                <div id="logo-group">
+                    <img id="logo-exa" src="https://1talow.github.io/chatbot-exa/assets/logo-clara.png" alt="Logo EXA" />
+                  <span id="assistant-text">Assistant</span>
+                </div>
+              </div>                        
             <button id="minimize-chat" title="Minimizar Chat" aria-label="Minimizar Chat" tabindex="0">─</button>
             <button id="settings-gear" title="Configurações" aria-label="Abrir configurações">
                 <i class="fas fa-cog"></i>
@@ -1222,6 +1332,9 @@
         const chatStatus = document.getElementById('chat-status');
         const actionButton = document.getElementById('action-button');
         
+
+        let animacaoLogoTimeout; // 🧠 controla a animação da logo
+
     
         function esconderWhatsApp() {
     const whatsappButton = document.getElementById("whatsapp-button");
@@ -1838,23 +1951,42 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
         let currentFontSize = 1; // controle do tamanho de fonte
 
         /***************************************************************
-         *               CONTROLE DO TEMA CLARO/ESCURO
-         ***************************************************************/
-        themeToggle.addEventListener('change', () => {
-            if (themeToggle.checked) {
-                chatBox.classList.add('dark-theme');
-                chatBox.classList.remove('light-theme');
-            } else {
-                chatBox.classList.add('light-theme');
-                chatBox.classList.remove('dark-theme');
-            }
-            // Atualiza status para forçar cor
-            atualizarEstiloStatus(); // Atualiza o estilo do status ao mudar de tema
+ *               CONTROLE DO TEMA CLARO/ESCURO
+ ***************************************************************/
+ themeToggle.addEventListener('change', () => {
+    if (themeToggle.checked) {
+        chatBox.classList.add('dark-theme');
+        chatBox.classList.remove('light-theme');
+    } else {
+        chatBox.classList.add('light-theme');
+        chatBox.classList.remove('dark-theme');
+    }
+
+    atualizarLogo(); // ✅ Continua funcionando
 });
 
 
+/***************************************************************
+ *               FUNÇÃO PARA TROCAR A LOGO DA EXA
+ ***************************************************************/
+ function atualizarLogo() {
+    const logo = document.getElementById('logo-exa');
+    const tema = chatBox.classList.contains('dark-theme') ? 'escuro' : 'claro';
+    
+    if (tema === 'escuro') {
+        logo.src = 'https://1talow.github.io/chatbot-exa/assets/logo-escura.png';  
+    } else {
+        logo.src = 'https://1talow.github.io/chatbot-exa/assets/logo-clara.png';  
+    }
+}
 
-
+/***************************************************************
+ *               GARANTIR A LOGO CERTA AO CARREGAR A PÁGINA
+ ***************************************************************/
+document.addEventListener('DOMContentLoaded', () => {
+    atualizarStatus('online');
+    atualizarLogo(); // ✅ Isso aqui garante a logo certa ao abrir
+});
 
         /***************************************************************
          *               CONTROLE DE TAMANHO DE FONTE
@@ -1895,10 +2027,6 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
         statusText.textContent = 'Offline';
         }
         };
-        // Inicia como online
-        document.addEventListener('DOMContentLoaded', () => {
-            atualizarStatus('online');
-        });
 
         function openChat() {
   if (isAnimating || chatBox.classList.contains('visible')) return;
@@ -1906,6 +2034,25 @@ chatStatusText.textContent = "Processando..."; // Simples atualização de texto
 
   chatBox.classList.remove('hidden', 'closing');
   chatBox.classList.add('visible');
+  atualizarLogo(); // 🧠 Garante que a logo carregue certa ao abrir
+
+// 🔥 Após 1s, anima logo + texto juntos
+clearTimeout(animacaoLogoTimeout); // 🔄 limpa timeout anterior
+
+const grupoLogo = document.getElementById('logo-group');
+grupoLogo.classList.remove('revelar'); // limpa antes
+void grupoLogo.offsetWidth; // força reflow
+
+animacaoLogoTimeout = setTimeout(() => {
+  grupoLogo.classList.add('revelar'); // anima com delay
+}, 300);
+
+
+  // 🔥 Anima a logo ao abrir o chat
+  const logo = document.getElementById('logo-exa');
+  logo.classList.remove('revelar'); // Reinicia a animação se já tiver
+  void logo.offsetWidth; // Força reflow
+  logo.classList.add('revelar'); // Ativa animação
 
   // Se estiver em dispositivo móvel, adiciona a classe full‑screen (opcional)
   if (window.innerWidth <= 768) {
