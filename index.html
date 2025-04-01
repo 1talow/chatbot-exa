@@ -1124,20 +1124,20 @@
 
 /* Texto "Assistant" mais moderno e harmônico */
 #assistant-text {
-    font-size: 20px;
-    font-weight: 650;
+    font-size: 22px;
+    font-weight: 651;
     font-family: 'Segoe UI', 'Arial', sans-serif;
     color: #314b73; /* cor padrão para tema claro */
     text-shadow: none;
     letter-spacing: 0.5px;
-    margin-top: 2px;
+    margin-top: 3px;
     transition: all 0.3s ease;
 }
 
 #logo-exa {
-    height: 18px !important; /* 🔽 Antes era 28px ou 40px */
+    height: 16px !important; /* 🔽 Antes era 28px ou 40px */
     transition: all 0.3s ease;
-    margin-top: 1px; /* alinhamento fino com o texto */
+    margin-top: 4px; /* alinhamento fino com o texto */
 }
 
 /* Tema claro: azul escuro sem sombra */
@@ -1530,13 +1530,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderMessage(text, sender) {
-        const chatMessages = document.getElementById("chat-messages");
-        const messageDiv = document.createElement("div");
-        messageDiv.classList.add("message", sender);
-        messageDiv.innerText = text;
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+    const chatMessages = document.getElementById("chat-box-messages"); // Corrigido aqui
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message", sender);
+    messageDiv.innerText = text;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 
     function displayDynamicQuestions(questions) {
         const container = document.getElementById("predefined-questions");
