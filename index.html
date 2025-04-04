@@ -1331,26 +1331,7 @@
         const themeToggle = document.getElementById('theme-toggle');
         const chatStatus = document.getElementById('chat-status');
         const actionButton = document.getElementById('action-button');
-        const openBotSound = document.getElementById('chatOpenSound');
-
-let botPreviouslyClosed = true;
-
-const chatIcon = document.querySelector('.chat-icon');
-const chatbot = document.querySelector('.chatbot');
-
-if (chatIcon) {
-  chatIcon.addEventListener('click', () => {
-    const isHidden = chatbot.classList.contains('hidden');
-    if (isHidden && botPreviouslyClosed) {
-      openBotSound.play();
-      botPreviouslyClosed = false;
-    } else {
-      botPreviouslyClosed = true;
-    }
-  });
-}
-
-
+        
 
         let animacaoLogoTimeout; // 🧠 controla a animação da logo
 
@@ -2631,7 +2612,5 @@ function digitarPerguntas() {
 
 <audio id="notification-sound" src="https://1talow.github.io/chatbot-exa/assets/notification-sound.mp3" preload="auto"></audio>
 <audio id="keyboard-sound" src="https://1talow.github.io/chatbot-exa/assets/mechanical-keyboard-typing.mp3" preload="auto" loop></audio>
-<audio id="chatOpenSound" src="https://1talow.github.io/chatbot-exa/assets/chat-open.mp3" preload="auto"></audio>
-
 </body>
 </html>
