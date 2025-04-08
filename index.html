@@ -2037,6 +2037,15 @@ document.addEventListener('DOMContentLoaded', () => {
   chatBox.classList.add('visible');
   atualizarLogo(); // 🧠 Garante que a logo carregue certa ao abrir
 
+    // 🔊 Toca o som de abertura do chat
+    const openSound = document.getElementById("chatOpenSound");
+  if (openSound) {
+    openSound.currentTime = 0;
+    openSound.play().catch(e => {
+      console.warn("Falha ao tocar o som de abertura:", e);
+    });
+  }
+
 // 🔥 Após 1s, anima logo + texto juntos
 clearTimeout(animacaoLogoTimeout); // 🔄 limpa timeout anterior
 
@@ -2612,5 +2621,6 @@ function digitarPerguntas() {
 
 <audio id="notification-sound" src="https://1talow.github.io/chatbot-exa/assets/notification-sound.mp3" preload="auto"></audio>
 <audio id="keyboard-sound" src="https://1talow.github.io/chatbot-exa/assets/mechanical-keyboard-typing.mp3" preload="auto" loop></audio>
+<audio id="chatOpenSound" src="https://1talow.github.io/chatbot-exa/assets//chat-open.mp3" preload="auto"></audio>
 </body>
 </html>
