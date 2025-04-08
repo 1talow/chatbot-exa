@@ -1597,15 +1597,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // 🔹 Função para simular a digitação gradual letra por letra
 async function digitarTexto(elemento, texto, velocidade = 40) {
+    const tecladoSom = document.getElementById("keyboard-type-sound");
+
+    if (tecladoSom && tecladoSom.paused) {
+        tecladoSom.currentTime = 0;
+        tecladoSom.play();
+    }
+
     for (let i = 0; i < texto.length; i++) {
         elemento.textContent += texto[i];
-
-        // 🔹 Ajusta o scroll para acompanhar a digitação
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
         await new Promise(resolve => setTimeout(resolve, velocidade));
     }
+
+    // 🔇 Para o som ao final da digitação
+    if (tecladoSom) {
+        tecladoSom.pause();
+        tecladoSom.currentTime = 0;
+    }
 }
+
 
 
 /*************************************************************** 
@@ -2530,23 +2542,36 @@ function digitarPerguntas() {
             let i = 0;
 
             function escreverLetra() {
-                if (i < texto.length) {
-                    button.textContent += texto[i];
-                    i++;
+    if (i < texto.length) {
+        button.textContent += texto[i];
+        i++;
 
-                    // 🔹 Cresce o balão conforme cada letra digitada
-                    button.style.width = `${button.scrollWidth + 15}px`;
-                    button.style.maxWidth = "100%"; // 🔹 Evita crescimento infinito
+        // 🔊 Toca som de digitação gradual
+        const tecladoSom = document.getElementById("keyboard-type-sound");
+        if (tecladoSom && tecladoSom.paused) {
+            tecladoSom.currentTime = 0;
+            tecladoSom.play();
+        }
 
-                    // 🔹 Pequenas pausas humanas para realismo
-                    let delay = 40; // 🔹 Velocidade base
-                    if (Math.random() < 0.15) delay = 120; // Pequena pausa aleatória
-                    if (texto[i] === " ") delay = 80; // Pequena pausa em espaços
-                    if ([".", ",", "?", "!"].includes(texto[i - 1])) delay = 200; // 🔹 Pequena pausa ao final de frases
+        // 🔹 Cresce o balão conforme cada letra digitada
+        button.style.width = `${button.scrollWidth + 15}px`;
+        button.style.maxWidth = "100%";
 
-                    setTimeout(escreverLetra, delay);
-                }
-            }
+        let delay = 40;
+        if (Math.random() < 0.15) delay = 120;
+        if (texto[i] === " ") delay = 80;
+        if ([".", ",", "?", "!"].includes(texto[i - 1])) delay = 200;
+
+        setTimeout(escreverLetra, delay);
+    } else {
+        // 🔇 Para o som ao final da digitação
+        const tecladoSom = document.getElementById("keyboard-type-sound");
+        if (tecladoSom) {
+            tecladoSom.pause();
+            tecladoSom.currentTime = 0;
+        }
+    }
+}
 
             escreverLetra(); // 🔹 Inicia a digitação gradual
         }, index * 1300); // 🔹 Aparece uma por vez (1.3s entre cada uma)
@@ -2622,5 +2647,6 @@ function digitarPerguntas() {
 <audio id="notification-sound" src="https://1talow.github.io/chatbot-exa/assets/notification-sound.mp3" preload="auto"></audio>
 <audio id="keyboard-sound" src="https://1talow.github.io/chatbot-exa/assets/mechanical-keyboard-typing.mp3" preload="auto" loop></audio>
 <audio id="chatOpenSound" src="https://1talow.github.io/chatbot-exa/assets/chat-open.mp3" preload="auto"></audio>
+<audio id="keyboard-type-sound" src="assets/mechanical-keyboard-typing.mp3" preload="auto"></audio>
 </body>
 </html>
