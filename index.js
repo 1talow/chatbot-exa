@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
+import fs from "fs";
 
 dotenv.config();
 
@@ -177,6 +178,18 @@ async function enviarEmail(dados) {
         dados.historico = [{ role: 'system', content: 'Histórico de conversa não disponível.' }];
     }
 
+// 🔹 Gera o conteúdo do log da conversa
+const logContent = dados.historico?.map(entry => {
+    return `${entry.role.toUpperCase()}: ${entry.content}`;
+  }).join("\n") || "Histórico indisponível.";
+  
+  // 🔹 Caminho para salvar temporariamente o arquivo de log
+  const logPath = './conversa-log.txt';
+  
+  // 🔹 Escreve o arquivo localmente
+  fs.writeFileSync(logPath, logContent);
+  
+
     // 🔹 Geração do gráfico e análise
     const urlGrafico = await gerarGraficoEngajamento(dados.historico);
     const analise = await analisarConversaComIA(dados.historico);
@@ -206,13 +219,27 @@ async function enviarEmail(dados) {
           <img src="${urlGrafico}" alt="Gráfico de Engajamento" style="max-width: 100%; height: auto;">
           <hr>
           <p>📍 <em>Esta solicitação foi gerada automaticamente pelo ExaBot.</em></p>
-        `
+        `,
+        attachments: [
+            {
+              filename: "conversa-log.txt",
+              path: "./conversa-log.txt"
+            }
+          ]
       };      
 
-    await transporter.sendMail(mailOptions);
-}
+      await transporter.sendMail(mailOptions);
 
-
+      // 🔹 Após o envio do e-mail, remove o arquivo temporário
+      try {
+          fs.unlinkSync("./conversa-log.txt");
+          console.log("🧹 Arquivo de log removido com sucesso!");
+      } catch (erroRemocao) {
+          console.warn("⚠️ Não foi possível remover o arquivo de log:", erroRemocao);
+      }
+      }
+      
+  
 // 🔹 Função para gerar um resumo inteligente da conversa usando a OpenAI
 async function gerarResumoConversa(historico) {
     try {
