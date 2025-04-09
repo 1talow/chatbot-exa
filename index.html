@@ -1694,7 +1694,19 @@ function atualizarEstiloModal() {
 }
 
 // Chamando a função ao trocar o tema
-document.getElementById("theme-toggle").addEventListener("change", atualizarEstiloModal);
+document.getElementById("theme-toggle").addEventListener("change", () => {
+    atualizarEstiloModal();
+
+    // 🔊 Som ao alternar tema
+    const toggleSound = document.getElementById("themeToggleSound");
+    if (toggleSound) {
+        toggleSound.currentTime = 0;
+        toggleSound.play().catch(e => {
+            console.warn("Falha ao tocar som do tema:", e);
+        });
+    }
+});
+
 
 // 🔹 Fechar modal ao clicar fora dele
 document.getElementById("confirm-clear-modal").addEventListener("click", function (event) {
@@ -1706,7 +1718,8 @@ document.getElementById("confirm-clear-modal").addEventListener("click", functio
 
 // 🔹 Fechar modal ao minimizar o chatbot
 document.getElementById("minimize-chat").addEventListener("click", function () {
-    hideClearChatModal(); // Fecha o modal ao minimizar o chat
+    hideClearChatModal(); // Fecha o modal
+    tocarSomDeFechamento(); // Toca som
 });
 
 // 🔹 Fechar modal ao clicar fora do chatbot
@@ -1717,8 +1730,19 @@ document.addEventListener("click", function (event) {
     if (!chatBox.contains(event.target) && modal.style.display === "flex") {
         hideClearChatModal(); // Fecha o modal se o usuário clicar fora do chatbot
         minimizeChat(); // Minimiza o chatbot
+        tocarSomDeFechamento();
     }
 });
+
+function tocarSomDeFechamento() {
+    const closeSound = document.getElementById("chatCloseSound");
+    if (closeSound) {
+        closeSound.currentTime = 0;
+        closeSound.play().catch(e => {
+            console.warn("Erro ao tocar som de fechamento:", e);
+        });
+    }
+}
 
 /**************************************************************************************************************************** 
  *        ATUALIZA O BOTÃO PARA "LIMPAR" AO APAGAR TUDO (APÓS 2ª MSG)/ ADICIONANDO DELAY DE 200ms NA TROCA PARA "ENVIAR"
@@ -2677,5 +2701,7 @@ function digitarPerguntas() {
 <audio id="chatStartSound" src="https://1talow.github.io/chatbot-exa/assets/chat-start.mp3" preload="auto"></audio>
 <audio id="chatOpenSound" src="https://1talow.github.io/chatbot-exa/assets/chat-open.mp3" preload="auto"></audio>
 <audio id="keyboard-type-sound" src="https://1talow.github.io/chatbot-exa/assets/mechanical-keyboard-typing.mp3" preload="auto"></audio>
+<audio id="themeToggleSound" src="https://1talow.github.io/chatbot-exa/assets/toggle-click.mp3" preload="auto"></audio>
+<audio id="chatCloseSound" src="https://1talow.github.io/chatbot-exa/assets/chat-close.mp3" preload="auto"></audio>
 </body>
 </html>
