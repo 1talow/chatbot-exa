@@ -2049,14 +2049,42 @@ document.addEventListener('DOMContentLoaded', () => {
   chatBox.classList.add('visible');
   atualizarLogo(); // 🧠 Garante que a logo carregue certa ao abrir
 
-    // 🔊 Toca o som de abertura do chat
-    const openSound = document.getElementById("chatOpenSound");
-  if (openSound) {
-    openSound.currentTime = 0;
-    openSound.play().catch(e => {
-      console.warn("Falha ao tocar o som de abertura:", e);
+   // 🎯 Dois sons diferentes para abertura do chatbot
+const chatStartSound = document.getElementById("chatStartSound");
+const chatOpenSound = document.getElementById("chatOpenSound");
+
+// 🔒 Verifica se já tocou som nesta aba
+let somInicialTocado = false;
+
+try {
+  somInicialTocado = sessionStorage.getItem("exa_chat_inicializou") === "true";
+} catch (e) {
+  console.warn("⚠️ sessionStorage não disponível:", e);
+}
+
+// 🔊 Toca o som correto com base no estado
+if (!somInicialTocado) {
+  try {
+    sessionStorage.setItem("exa_chat_inicializou", "true");
+  } catch (e) {
+    console.warn("⚠️ Não foi possível salvar no sessionStorage:", e);
+  }
+
+  if (chatStartSound) {
+    chatStartSound.currentTime = 0;
+    chatStartSound.play().catch(e => {
+      console.warn("Erro ao tocar chat-start:", e);
     });
   }
+} else {
+  if (chatOpenSound) {
+    chatOpenSound.currentTime = 0;
+    chatOpenSound.play().catch(e => {
+      console.warn("Erro ao tocar chat-open:", e);
+    });
+  }
+}
+
 
 // 🔥 Após 1s, anima logo + texto juntos
 clearTimeout(animacaoLogoTimeout); // 🔄 limpa timeout anterior
@@ -2646,6 +2674,7 @@ function digitarPerguntas() {
 
 <audio id="notification-sound" src="https://1talow.github.io/chatbot-exa/assets/notification-sound.mp3" preload="auto"></audio>
 <audio id="keyboard-sound" src="https://1talow.github.io/chatbot-exa/assets/mechanical-keyboard-typing.mp3" preload="auto" loop></audio>
+<audio id="chatStartSound" src="https://1talow.github.io/chatbot-exa/assets/chat-start.mp3" preload="auto"></audio>
 <audio id="chatOpenSound" src="https://1talow.github.io/chatbot-exa/assets/chat-open.mp3" preload="auto"></audio>
 <audio id="keyboard-type-sound" src="https://1talow.github.io/chatbot-exa/assets/mechanical-keyboard-typing.mp3" preload="auto"></audio>
 </body>
