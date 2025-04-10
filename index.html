@@ -2310,6 +2310,20 @@ document.addEventListener('click', (event) => {
     if (!isClickInsideChat && !isClickInsideWidget) {
         minimizeChat();
         desligarTTS(); // Desliga o TTS ao fechar clicando fora
+        if (!isClickInsideChat && !isClickInsideWidget) {
+    minimizeChat();
+    desligarTTS(); // Desliga o TTS ao fechar clicando fora
+    tocarSomDeFechamento(); // 🔊 Toca som ao clicar fora do chat
+
+    if (settingsMenu.style.display === 'block') {
+        settingsMenu.style.display = 'none';
+        settingsGear.classList.remove('rotate-right');
+        settingsGear.classList.add('rotate-left');
+        isRotatedRight = false;
+    }
+}
+
+
 
         // **Fecha o menu de configurações ao minimizar**
         if (settingsMenu.style.display === 'block') {
