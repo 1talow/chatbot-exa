@@ -2283,49 +2283,24 @@ function desligarTTS() {
     }
 }
 
-// Se desejar, aplique também ao fechar o chat via outros métodos (ex.: clique fora)
-document.addEventListener('click', (event) => {
-    const isClickInsideChat = chatBox.contains(event.target);
-    const isClickInsideWidget = chatWidget.contains(event.target);
-    const isClickInsideSettingsMenu = settingsMenu.contains(event.target);
-    const isClickInsideSettingsGear = settingsGear.contains(event.target);
-
-    // Se clicou fora do chat e o chat está aberto, minimize e desliga o TTS
-    if (!isClickInsideChat && !isClickInsideWidget) {
-        minimizeChat();
-        desligarTTS(); // Desliga o TTS ao fechar clicando fora
-    }
-});
-
         /***************************************************************
-         *               FECHAR AO CLICAR FORA DO CHAT
-         ***************************************************************/
-         document.addEventListener('click', (event) => {
-    const isClickInsideChat = chatBox.contains(event.target);
-    const isClickInsideWidget = chatWidget.contains(event.target);
-    const isClickInsideSettingsMenu = settingsMenu.contains(event.target);
-    const isClickInsideSettingsGear = settingsGear.contains(event.target);
+ *               FECHAR AO CLICAR FORA DO CHAT
+ ***************************************************************/
+document.addEventListener('click', (event) => {
+    const elementosExabot = [chatBox, chatWidget, settingsMenu, settingsGear, thoughtBubble];
+    const cliqueDentroDoExabot = elementosExabot.some(el => el && el.contains(event.target));
 
-    // Se clicou fora do chat e o chat está aberto, minimize e desliga o TTS
-    if (!isClickInsideChat && !isClickInsideWidget) {
+    // Se clicou fora de todos os elementos do ExaBot
+    if (!cliqueDentroDoExabot) {
+        // Só toca o som se o chat estiver visível
+        if (chatBox.classList.contains("visible")) {
+            tocarSomDeFechamento();
+        }
+
         minimizeChat();
-        desligarTTS(); // Desliga o TTS ao fechar clicando fora
-        if (!isClickInsideChat && !isClickInsideWidget) {
-    minimizeChat();
-    desligarTTS(); // Desliga o TTS ao fechar clicando fora
-    tocarSomDeFechamento(); // 🔊 Toca som ao clicar fora do chat
+        desligarTTS();
 
-    if (settingsMenu.style.display === 'block') {
-        settingsMenu.style.display = 'none';
-        settingsGear.classList.remove('rotate-right');
-        settingsGear.classList.add('rotate-left');
-        isRotatedRight = false;
-    }
-}
-
-
-
-        // **Fecha o menu de configurações ao minimizar**
+        // Fecha o menu de configurações ao minimizar
         if (settingsMenu.style.display === 'block') {
             settingsMenu.style.display = 'none';
             settingsGear.classList.remove('rotate-right');
