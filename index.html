@@ -1719,6 +1719,7 @@ document.getElementById("confirm-clear-modal").addEventListener("click", functio
 // 🔹 Fechar modal ao minimizar o chatbot
 document.getElementById("minimize-chat").addEventListener("click", function () {
     hideClearChatModal(); // Fecha o modal
+    pararFala();           // 🛑 Interrompe qualquer fala
     tocarSomDeFechamento(); // Toca som
 });
 
@@ -1901,30 +1902,78 @@ function limparTextoParaFala(texto) {
     return texto.trim(); // Remove espaços desnecessários no início e fim
 }
 
-// Função para iniciar a fala com velocidade ajustada para pt-BR
-function iniciarFala(texto) {
-    if (!ttsEnabled || !('speechSynthesis' in window)) return; // Verifica se o TTS está ativado ou suportado
+// 🔊 Função para iniciar a fala usando TTS da OpenAI com status inteligentes
+async function iniciarFala(texto) {
+    if (!ttsEnabled) return; // Só roda se o TTS estiver ativado
 
-    const textoLimpo = limparTextoParaFala(texto); // Limpa o texto antes de falar
-    const idiomaDetectado = detectarIdioma(textoLimpo);
+    const textoLimpo = texto.trim();
+    atualizarStatus('processando'); // Quando começa a responder (texto ainda sendo gerado)
 
+    try {
+        const baseURL = window.location.hostname.includes('localhost')
+  ? 'http://localhost:3000'
+  : 'https://chatbot-exa.onrender.com/chatbot/tts'; // troca pela URL do Render ou servidor que tu usa
 
-    // Cria o objeto de fala
-    const utterance = new SpeechSynthesisUtterance(textoLimpo);
-    utterance.lang = idiomaDetectado;
+const resposta = await fetch(`${baseURL}/tts`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ texto: textoLimpo })
+});
 
-    // Ajusta a velocidade com base no idioma
-    if (idiomaDetectado === 'pt-BR') {
-        utterance.rate = 1.9; // Velocidade aumentada para Português
-    } else {
-        utterance.rate = 1; // Velocidade padrão para outros idiomas
+        const data = await resposta.json();
+        console.log("🔈 TTS recebido:", data);
+
+        if (data.audioUrl) {
+            pararFala(); // Evita áudios sobrepostos
+
+            // 🗣️ Mostra status temporário antes de reproduzir
+            atualizarStatusTemporario("🗣️ Preparando resposta de voz...");
+
+            const audio = new Audio(data.audioUrl);
+            window.audioAtual = audio;
+
+            // ✅ Quando o áudio estiver pronto para tocar
+audio.oncanplaythrough = () => {
+    if (audio.played.length > 0) {
+        console.log("⚠️ Áudio já foi reproduzido, ignorando repetição.");
+        return;
     }
 
-    utterance.pitch = 1; // Tom da fala
+    console.log("✅ Áudio pronto para reprodução.");
 
-    // Fala o texto no idioma detectado
-    console.log(`Falando no idioma: ${idiomaDetectado} com velocidade: ${utterance.rate}`);
-    window.speechSynthesis.speak(utterance);
+    // ⚠️ Se o TTS tiver sido desativado ou o chat minimizado, não toca
+    const chatMinimizado = chatBox.classList.contains('hidden') || chatBox.classList.contains('closing');
+    if (!ttsEnabled || chatMinimizado) {
+        console.log("⛔ Reprodução cancelada: TTS desativado ou chat minimizado.");
+        return;
+    }
+
+    atualizarStatusTemporario("🔊 Reproduzindo resposta...");
+    audio.play();
+};
+
+
+
+            // 🎯 Ao terminar de falar, volta para online
+            audio.onended = () => {
+                atualizarStatus('online');
+            };
+
+            // ❌ Erro ao carregar áudio
+            audio.onerror = (e) => {
+                console.error("❌ Erro ao carregar o áudio TTS:", e);
+                atualizarStatus('online');
+            };
+        } else {
+            console.warn("⚠️ Nenhum áudio retornado pelo TTS.");
+            atualizarStatus('online');
+        }
+    } catch (erro) {
+        console.error('❌ Erro no TTS da OpenAI:', erro);
+        atualizarStatus('online');
+    }
 }
 
 
@@ -1960,10 +2009,30 @@ function filtrarTextoParaTTS(texto) {
 
 // Função para parar qualquer fala em andamento
 function pararFala() {
+    if (window.audioAtual && typeof window.audioAtual.pause === 'function') {
+        window.audioAtual.pause();
+        window.audioAtual.currentTime = 0;
+        window.audioAtual = null;
+        console.log("🛑 Áudio interrompido.");
+    }
+
+    // 🧠 Garante que o status não fique congelado em "Reproduzindo resposta..."
+    const statusText = document.querySelector('#status-text') || document.querySelector('#status-indicador');
+    if (statusText && (statusText.textContent.includes('Reproduzindo') || statusText.textContent.includes('Preparando'))) {
+        statusText.textContent = 'Online';
+        const chatStatus = document.getElementById('chat-status');
+        if (chatStatus) {
+            chatStatus.classList.remove('processando', 'offline');
+            chatStatus.classList.add('online');
+        }
+        console.log("🔄 Status manualmente resetado para 'Online' após interrupção.");
+    }
+
     if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Cancela todas as falas
+        window.speechSynthesis.cancel();
     }
 }
+
 
 /***************************************************************
  *               EXEMPLO DE INTEGRAÇÃO COM STATUS
@@ -2049,21 +2118,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         /***************************************************************
-         *               FUNÇÃO DE STATUS (online, processando, offline)
-         ***************************************************************/
-         const atualizarStatus = (novoStatus) => {
-         const statusText = document.querySelector('#status-text'); // Seleciona o span do texto do status
-         chatStatus.classList.remove('online', 'processando', 'offline');
-         chatStatus.classList.add(novoStatus);
+ *               FUNÇÃO DE STATUS (online, processando, offline)
+ ***************************************************************/
+const atualizarStatus = (novoStatus) => {
+    const statusText = document.querySelector('#status-text'); // Seleciona o span do texto do status
+    chatStatus.classList.remove('online', 'processando', 'offline');
+    chatStatus.classList.add(novoStatus);
 
-        if (novoStatus === 'online') {
+    if (novoStatus === 'online') {
         statusText.textContent = 'Online';
-        } else if (novoStatus === 'processando') {
+    } else if (novoStatus === 'processando') {
         statusText.textContent = 'Processando...';
-        } else if (novoStatus === 'offline') {
+    } else if (novoStatus === 'offline') {
         statusText.textContent = 'Offline';
-        }
-        };
+    }
+};
+
+/***************************************************************
+ *       NOVA FUNÇÃO DE STATUS TEMPORÁRIO PARA O TTS
+ ***************************************************************/
+ function atualizarStatusTemporario(novoTexto, tempoEmMs = null) {
+    const statusText = document.querySelector('#status-text');
+    const chatStatus = document.getElementById('chat-status');
+
+    if (!statusText || !chatStatus) return;
+
+    const textoOriginal = statusText.textContent;
+    const classeOriginal = chatStatus.className;
+
+    // Aplica texto e classe visualmente compatível
+    statusText.textContent = novoTexto;
+
+    // Ajusta cor dependendo do tipo de mensagem temporária
+    if (novoTexto.includes("Preparando")) {
+        chatStatus.classList.remove('online', 'offline');
+        chatStatus.classList.add('processando'); // Usa a cor de "processando"
+    } else if (novoTexto.includes("Reproduzindo")) {
+        chatStatus.classList.remove('processando', 'offline');
+        chatStatus.classList.add('online'); // Usa a cor de "online"
+    }
+
+    // Se houver tempo para restaurar
+    if (tempoEmMs) {
+        setTimeout(() => {
+            statusText.textContent = textoOriginal;
+            chatStatus.className = classeOriginal;
+        }, tempoEmMs);
+    }
+}
+
+
 
         function openChat() {
   if (isAnimating || chatBox.classList.contains('visible')) return;
@@ -2374,7 +2478,12 @@ document.addEventListener('click', (event) => {
     renderizarMensagem(message, "user"); // Exibe a mensagem do usuário
     chatInput.value = ''; // Limpa o campo de entrada
     responsePending = true;
+    if (ttsEnabled) {
+    atualizarStatusTemporario("🗣️ Preparando resposta de voz...");
+} else {
     atualizarStatus('processando');
+}
+
 
     const typingIndicator = document.createElement('div');
     typingIndicator.className = 'typing-indicator';

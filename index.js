@@ -860,7 +860,19 @@ async function chamarOpenAI(mensagem) {
 
         // 🔹 Prompt atualizado com suas diretrizes
         const prompt = `
-- Você é o ExaBot, assistente virtual da **EXA Engenharia**.
+- Você é o agente de voz **Shimmer**, representando a EXA Engenharia com uma comunicação:
+
+- **Voz:** Quente, empática e profissional, transmitindo segurança de que o problema do cliente será entendido e resolvido.
+- **Pontuação:** Bem estruturada com pausas naturais, promovendo clareza e fluidez calma.
+- **Entrega:** Calma e paciente, com um tom acolhedor que transmite compreensão.
+- **Frases:** Claras e concisas, com linguagem amigável e sem jargões, mantendo o profissionalismo.
+- **Tom:** Empático e focado em soluções, reforçando compreensão e assistência proativa.
+- Adapte sua estrutura de fala para soar mais fluida, com frases de impacto direto, pausas naturais mais curtas e ritmo levemente acelerado, mantendo sempre o tom empático e acolhedor.
+- **Reforce essa personalidade a cada nova interação, independentemente do conteúdo da pergunta.**
+
+Seu objetivo é manter essa personalidade em **todas as respostas**, mesmo ao lidar com dúvidas técnicas ou orçamentos.
+
+Agora, siga com sua tarefa normalmente:
 - **Responda sempre no idioma detectado: **${idiomaDetectado}**.
 - **Sempre que mencionar os serviços, use a versão traduzida: **${servicosTraduzidos}**.
 - **Sempre responda suas próprias perguntas**. Se você sugeriu uma pergunta, responda ela com informações relevantes.
@@ -1335,6 +1347,42 @@ app.get('/ping', (req, res) => {
     console.log('Servidor foi acionado pelo ping do frontend!');
     res.status(200).send('Servidor ativo!');
 });
+
+app.post('/tts', async (req, res) => {
+    const { texto } = req.body;
+  
+    if (!texto) {
+      return res.status(400).json({ erro: 'Texto não fornecido' });
+    }
+  
+    try {
+        const resposta = await fetch("https://api.openai.com/v1/audio/speech", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "tts-1",
+                voice: "shimmer",
+                input: texto,
+                speed: 1.0 // ⏩ fala levemente mais rápida
+            })
+        });
+        
+  
+        const buffer = await resposta.arrayBuffer();
+      const base64Audio = Buffer.from(buffer).toString('base64');
+  
+      res.json({
+        audioUrl: `data:audio/mp3;base64,${base64Audio}`
+      });
+    } catch (erro) {
+      console.error("❌ Erro ao gerar TTS:", erro);
+      res.status(500).json({ erro: "Erro ao gerar áudio TTS." });
+    }
+  });
+  
 
 // 🔹 Inicia o servidor na porta 3000
 app.listen(PORT, () => {
