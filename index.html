@@ -1912,7 +1912,7 @@ async function iniciarFala(texto) {
     try {
         const baseURL = window.location.hostname.includes('localhost')
   ? 'http://localhost:3000'
-  : 'https://chatbot-exa.onrender.com/chatbot/tts'; // troca pela URL do Render ou servidor que tu usa
+  : 'https://chatbot-exa.onrender.com/tts'; // troca pela URL do Render ou servidor que tu usa
 
 const resposta = await fetch(`${baseURL}/tts`, {
   method: 'POST',
