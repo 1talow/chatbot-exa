@@ -1911,10 +1911,10 @@ async function iniciarFala(texto) {
 
     try {
         const baseURL = window.location.hostname.includes('localhost')
-  ? 'http://localhost:3000'
-  : 'https://chatbot-exa.onrender.com/tts'; // troca pela URL do Render ou servidor que tu usa
+  ? 'http://localhost:3000/tts'
+  : 'https://chatbot-exa.onrender.com/tts';
 
-const resposta = await fetch(`${baseURL}/tts`, {
+const resposta = await fetch(baseURL, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
