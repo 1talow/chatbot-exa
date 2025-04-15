@@ -1216,6 +1216,39 @@
   animation: revelarLogoTexto 0.6s ease-out forwards;
 }
 
+/* 🔊 Estilo Toggle TTS (igual ao de Tema) */
+#tts-toggle-switch {
+    width: 40px;
+    height: 20px;
+    appearance: none;
+    background-color: #ccc;
+    border-radius: 20px;
+    position: relative;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#tts-toggle-switch:checked {
+    background-color: #4caf50;
+}
+
+#tts-toggle-switch::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border-radius: 50%;
+    top: 1px;
+    left: 1px;
+    transition: transform 0.3s ease;
+}
+
+#tts-toggle-switch:checked::before {
+    transform: translateX(20px);
+}
+
 
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -1255,13 +1288,17 @@
 
         <div id="dynamic-questions-container"></div>
 
-        <!-- Status fixo -->
-        <div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0; display: flex; align-items: center; justify-content: space-between;">
-            <span id="status-text" style="margin-right: auto;">Online</span>
-            <button id="tts-toggle-button" title="Ativar/Desativar TTS" aria-label="Ativar/Desativar TTS" style="background-color: transparent; border: none; color: #ccc; cursor: pointer; font-size: 18px;">
-                <i class="fas fa-volume-up"></i>
-            </button>
-        </div>        
+        <!-- Status fixo com botão de mute geral -->
+<div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0; display: flex; align-items: center; justify-content: space-between;">
+    <span id="status-text" style="margin-right: auto;">Online</span>
+
+    <!-- Botão de Mute Geral -->
+    <button id="mute-toggle-button" title="Ativar/Desativar Som Geral" aria-label="Ativar/Desativar Som Geral"
+        style="background-color: transparent; border: none; color: #ccc; cursor: pointer; font-size: 18px; margin-left: 10px;">
+        <i id="mute-icon" class="fas fa-volume-up"></i>
+    </button>
+</div>
+      
                 
         <!-- 🔹 MODAL DE CONFIRMAÇÃO PARA LIMPAR O CHAT -->
 
@@ -1275,7 +1312,6 @@
     </div>
 </div>
 
-        
         <!-- Menu de Configurações -->
         <div id="settings-menu" aria-hidden="true" role="dialog" aria-label="Menu de Configurações">
             <h3>Ajustes de Acessibilidade</h3>
@@ -1283,6 +1319,13 @@
                 <label for="theme-toggle">Tema Claro/Escuro</label>
                 <input type="checkbox" id="theme-toggle">
             </div>
+
+<!-- Toggle de TTS -->
+<div class="settings-item toggle-container">
+    <label class="toggle-label" for="tts-toggle-switch">Leitura de Voz/ TTS</label>
+    <input type="checkbox" id="tts-toggle-switch" class="toggle-switch" aria-label="Ativar/Desativar TTS">
+  </div>
+
             <div class="settings-item">
                 <label for="font-size-control">Ajustar tamanho da fonte:</label>
                 <button id="increase-font" aria-label="Aumentar fonte">A+</button>
@@ -1334,6 +1377,33 @@
         
 
         let animacaoLogoTimeout; // 🧠 controla a animação da logo
+// 🔇 Estado do Mudo Geral (persistente por aba)
+let muteGeralAtivado = localStorage.getItem('muteGeralAtivado') === 'true';
+
+
+function alternarMuteGeral() {
+    muteGeralAtivado = !muteGeralAtivado;
+    localStorage.setItem('muteGeralAtivado', muteGeralAtivado);
+
+    // Atualiza o ícone
+    const muteIcon = document.getElementById('mute-icon');
+    if (muteGeralAtivado) {
+        muteIcon.classList.remove('fa-volume-up');
+        muteIcon.classList.add('fa-volume-off');
+    } else {
+        muteIcon.classList.remove('fa-volume-off');
+        muteIcon.classList.add('fa-volume-up');
+    }
+
+    // Se o modo mudo for ativado, também interrompe qualquer fala
+    if (muteGeralAtivado) {
+        pararFala();
+        console.log('🔇 Mudo geral ativado');
+    } else {
+        console.log('🔊 Mudo geral desativado');
+    }
+}
+
 
     
         function esconderWhatsApp() {
@@ -1375,9 +1445,11 @@ function digitarBoasVindasNoBubble(texto, velocidade = 40) {
   elemento.textContent = "";
 
   notificationSound.currentTime = 0;
+  if (somPermitido())
   notificationSound.play();
 
   keyboardSound.currentTime = 0;
+  if (somPermitido())
   keyboardSound.play();
 
   function digitar() {
@@ -1601,6 +1673,7 @@ async function digitarTexto(elemento, texto, velocidade = 40) {
 
     if (tecladoSom && tecladoSom.paused) {
         tecladoSom.currentTime = 0;
+        if (somPermitido())
         tecladoSom.play();
     }
 
@@ -1701,12 +1774,52 @@ document.getElementById("theme-toggle").addEventListener("change", () => {
     const toggleSound = document.getElementById("themeToggleSound");
     if (toggleSound) {
         toggleSound.currentTime = 0;
+        if (somPermitido())
         toggleSound.play().catch(e => {
             console.warn("Falha ao tocar som do tema:", e);
         });
     }
 });
 
+/***************************************************************
+ *               CONTROLE DO TTS (Texto para Fala)
+ ***************************************************************/
+ const ttsToggleSwitch = document.getElementById('tts-toggle-switch');
+
+// Verifica se é uma nova aba (para redefinir o TTS)
+if (!sessionStorage.getItem('visitouTTSExa')) {
+  localStorage.setItem('ttsAtivado', 'false'); // TTS desativado por padrão
+  sessionStorage.setItem('visitouTTSExa', 'true');
+}
+
+// Verifica se o usuário já tinha uma preferência salva
+let ttsEnabled = localStorage.getItem('ttsAtivado') === 'true';
+
+// Define o estado visual do toggle baseado na preferência
+ttsToggleSwitch.checked = ttsEnabled;
+
+// Atualiza o toggle quando o usuário clicar
+ttsToggleSwitch.addEventListener('change', () => {
+    ttsEnabled = ttsToggleSwitch.checked;
+    localStorage.setItem('ttsAtivado', ttsEnabled);
+
+    // 🔊 Som ao alternar TTS
+    const toggleSound = document.getElementById("themeToggleSound"); // Reutiliza o mesmo som
+    if (toggleSound) {
+        toggleSound.currentTime = 0;
+        if (somPermitido())
+        toggleSound.play().catch(e => {
+            console.warn("Falha ao tocar som do TTS:", e);
+        });
+    }
+
+    if (!ttsEnabled) {
+        pararFala();
+        console.log("🔇 TTS desativado");
+    } else {
+        console.log("🔊 TTS ativado");
+    }
+});
 
 // 🔹 Fechar modal ao clicar fora dele
 document.getElementById("confirm-clear-modal").addEventListener("click", function (event) {
@@ -1736,6 +1849,8 @@ document.addEventListener("click", function (event) {
 });
 
 function tocarSomDeFechamento() {
+    if (!somPermitido()) return; // Só toca se o som estiver ativado
+
     const closeSound = document.getElementById("chatCloseSound");
     if (closeSound) {
         closeSound.currentTime = 0;
@@ -1779,6 +1894,59 @@ chatInput.addEventListener('input', () => {
         actionButton.setAttribute("data-action", "clear");
     }
 });
+
+/***************************************************************
+ *               CONTROLE DO MUTE GERAL
+ ***************************************************************/
+ const muteToggleButton = document.getElementById('mute-toggle-button');
+const muteIcon = document.getElementById('mute-icon');
+
+// Detecta se é uma nova aba (sem histórico de visita atual)
+const visitouNessaAba = sessionStorage.getItem('visitouAbaExa') === 'true';
+
+let isMuted = false;
+
+// Se já visitou essa aba antes, mantemos o que estiver salvo no localStorage
+if (visitouNessaAba) {
+  isMuted = localStorage.getItem('exaMute') === 'true';
+} else {
+  // Primeira visita na aba => som ativado por padrão
+  isMuted = false;
+  localStorage.setItem('exaMute', 'false');
+  sessionStorage.setItem('visitouAbaExa', 'true'); // Marca que essa aba já foi usada
+}
+
+atualizarIconeMute(); // Mostra o ícone correto ao carregar
+
+// Evento de clique no botão de mute
+muteToggleButton.addEventListener('click', () => {
+    isMuted = !isMuted;
+    localStorage.setItem('exaMute', isMuted);
+    atualizarIconeMute();
+    if (isMuted) {
+        pararFala();
+        console.log("🔇 Modo mudo geral ativado.");
+    } else {
+        console.log("🔊 Modo mudo geral desativado.");
+    }
+});
+
+// Função para verificar se o som deve tocar
+function somPermitido() {
+    return !isMuted;
+}
+
+// Atualiza o ícone do botão com base no estado
+function atualizarIconeMute() {
+    if (isMuted) {
+        muteIcon.classList.remove('fa-volume-up');
+        muteIcon.classList.add('fa-volume-mute');
+    } else {
+        muteIcon.classList.remove('fa-volume-mute');
+        muteIcon.classList.add('fa-volume-up');
+    }
+}
+
 
 /*************************************************************** 
  *     AJUSTE DO CHATBOT QUANDO O TECLADO VIRTUAL ABRE (MOBILE)
@@ -1846,43 +2014,7 @@ function clearAllMessages() {
 }
 
 
-        /***************************************************************
-        *               CONTROLE DO TTS (Texto para Fala)
-        ***************************************************************/
-// Referência ao botão de TTS
-const ttsButton = document.getElementById('tts-toggle-button');
-let ttsEnabled = false; // Estado inicial do TTS (desativado)
-
-// Evento de clique no botão de TTS
-ttsButton.addEventListener('click', (event) => {
-    event.stopPropagation(); // Evita conflitos ao clicar em outros elementos
-    ttsEnabled = !ttsEnabled; // Alterna o estado do TTS
-    atualizarBotaoTTS(); // Atualiza o ícone do botão
-
-    if (!ttsEnabled) {
-        pararFala(); // Interrompe qualquer fala em andamento ao desativar o TTS
-        console.log('TTS desativado!');
-    } else {
-        console.log('TTS ativado!');
-        // As mensagens futuras serão lidas automaticamente
-    }
-});
-
-// Função para atualizar o ícone do botão de TTS
-function atualizarBotaoTTS() {
-    if (ttsEnabled) {
-        ttsButton.classList.remove('off');
-        ttsButton.classList.add('on');
-        ttsButton.innerHTML = '<i class="fas fa-volume-up"></i>'; // Ícone de som ligado
-    } else {
-        ttsButton.classList.remove('on');
-        ttsButton.classList.add('off');
-        ttsButton.innerHTML = '<i class="fas fa-volume-mute"></i>'; // Ícone de som desligado
-    }
-}
-
-// Inicializa o botão como desligado
-atualizarBotaoTTS();
+        
 
 // Função para detectar o idioma automaticamente com prioridade para pt-BR
 function detectarIdioma(texto) {
@@ -1912,7 +2044,7 @@ async function iniciarFala(texto) {
     try {
         const baseURL = window.location.hostname.includes('localhost')
   ? 'http://localhost:3000'
-  : 'https://chatbot-exa.onrender.com/tts'; // troca pela URL do Render ou servidor que tu usa
+  : 'https://chatbot-exa.onrender.com'; // troca pela URL do Render ou servidor que tu usa
 
 const resposta = await fetch(`${baseURL}/tts`, {
   method: 'POST',
@@ -2180,6 +2312,10 @@ const atualizarStatus = (novoStatus) => {
    // 🎯 Dois sons diferentes para abertura do chatbot
 const chatStartSound = document.getElementById("chatStartSound");
 const chatOpenSound = document.getElementById("chatOpenSound");
+if (somPermitido()) {
+    chatOpenSound.play();
+}
+
 
 // 🔒 Verifica se já tocou som nesta aba
 let somInicialTocado = false;
@@ -2200,6 +2336,7 @@ if (!somInicialTocado) {
 
   if (chatStartSound) {
     chatStartSound.currentTime = 0;
+    if (somPermitido())
     chatStartSound.play().catch(e => {
       console.warn("Erro ao tocar chat-start:", e);
     });
@@ -2207,6 +2344,7 @@ if (!somInicialTocado) {
 } else {
   if (chatOpenSound) {
     chatOpenSound.currentTime = 0;
+    if (somPermitido())
     chatOpenSound.play().catch(e => {
       console.warn("Erro ao tocar chat-open:", e);
     });
@@ -2700,6 +2838,7 @@ function digitarPerguntas() {
         const tecladoSom = document.getElementById("keyboard-type-sound");
         if (tecladoSom && tecladoSom.paused) {
             tecladoSom.currentTime = 0;
+            if (somPermitido())
             tecladoSom.play();
         }
 
