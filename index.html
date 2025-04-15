@@ -208,7 +208,7 @@
     background: #f1f1f1;
     border-bottom: 1px solid #ccc;
     text-align: center;
-    min-height: 30px; /* Garante uma altura mínima */
+    min-height: 40px; /* Garante uma altura mínima */
 }
 
 #status-text {
@@ -257,6 +257,15 @@
     content: "\f6a9"; /* Ícone de mudo (fa-volume-mute) */
 }
 
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.status-bolinha.pulsando {
+  animation: pulse 1.2s infinite ease-in-out;
+}
 
 
         /* Diferentes status e suas cores */
@@ -1288,6 +1297,7 @@
 
         <div id="dynamic-questions-container"></div>
 
+<<<<<<< HEAD
         <!-- Status fixo com botão de mute geral -->
 <div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0; display: flex; align-items: center; justify-content: space-between;">
     <span id="status-text" style="margin-right: auto;">Online</span>
@@ -1299,6 +1309,19 @@
     </button>
 </div>
       
+=======
+        <!-- Status fixo -->
+        <div id="chat-status" style="text-align: center; font-size: 14px; padding: 5px 0; display: flex; align-items: center; justify-content: space-between;">
+            <span id="status-text" style="margin-right: auto;">Online</span>
+<span id="status-bolinha" style="margin-left: 8px; display: none;">
+    <span style="display: inline-block; width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; animation: pulse 1s infinite ease-in-out;"></span>
+</span>
+
+            <button id="tts-toggle-button" title="Ativar/Desativar TTS" aria-label="Ativar/Desativar TTS" style="background-color: transparent; border: none; color: #ccc; cursor: pointer; font-size: 18px;">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>        
+>>>>>>> 08e22f6d0d194a427ffcc2df0d1306024491f37d
                 
         <!-- 🔹 MODAL DE CONFIRMAÇÃO PARA LIMPAR O CHAT -->
 
@@ -2043,10 +2066,15 @@ async function iniciarFala(texto) {
 
     try {
         const baseURL = window.location.hostname.includes('localhost')
+<<<<<<< HEAD
   ? 'http://localhost:3000'
   : 'https://chatbot-exa.onrender.com'; // troca pela URL do Render ou servidor que tu usa
+=======
+  ? 'http://localhost:3000/tts'
+  : 'https://chatbot-exa.onrender.com/tts';
+>>>>>>> 08e22f6d0d194a427ffcc2df0d1306024491f37d
 
-const resposta = await fetch(`${baseURL}/tts`, {
+const resposta = await fetch(baseURL, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -2082,8 +2110,9 @@ audio.oncanplaythrough = () => {
         return;
     }
 
-    atualizarStatusTemporario("🔊 Reproduzindo resposta...");
+    atualizarStatusTemporario("Reproduzindo resposta...");
     audio.play();
+    mostrarBolinhaStatus();
 };
 
 
@@ -2091,12 +2120,14 @@ audio.oncanplaythrough = () => {
             // 🎯 Ao terminar de falar, volta para online
             audio.onended = () => {
                 atualizarStatus('online');
+                esconderBolinhaStatus();
             };
 
             // ❌ Erro ao carregar áudio
             audio.onerror = (e) => {
                 console.error("❌ Erro ao carregar o áudio TTS:", e);
                 atualizarStatus('online');
+                esconderBolinhaStatus();
             };
         } else {
             console.warn("⚠️ Nenhum áudio retornado pelo TTS.");
@@ -2105,6 +2136,23 @@ audio.oncanplaythrough = () => {
     } catch (erro) {
         console.error('❌ Erro no TTS da OpenAI:', erro);
         atualizarStatus('online');
+    }
+}
+
+// mostrar e esconder a bolinha de status
+function mostrarBolinhaStatus() {
+    const bolinha = document.getElementById('status-bolinha');
+    if (bolinha) {
+        bolinha.style.display = 'inline-block';
+        bolinha.classList.add('pulsando'); // 👈 Ativa a animação
+    }
+}
+
+function esconderBolinhaStatus() {
+    const bolinha = document.getElementById('status-bolinha');
+    if (bolinha) {
+        bolinha.style.display = 'none';
+        bolinha.classList.remove('pulsando'); // 👈 Remove a animação
     }
 }
 
@@ -2143,6 +2191,7 @@ function filtrarTextoParaTTS(texto) {
 function pararFala() {
     if (window.audioAtual && typeof window.audioAtual.pause === 'function') {
         window.audioAtual.pause();
+        esconderBolinhaStatus();
         window.audioAtual.currentTime = 0;
         window.audioAtual = null;
         console.log("🛑 Áudio interrompido.");
