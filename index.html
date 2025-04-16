@@ -1249,6 +1249,66 @@
     transform: translateX(20px);
 }
 
+/* Estilo do balão da mensagem de espera */
+.waiting-message {
+  background-color: #f1f1f1;
+  border-radius: 12px;
+  padding: 10px 15px;
+  margin: 10px;
+  font-size: 15px;
+  color: #333;
+  display: inline-block;
+  max-width: 90%;
+  animation: fadeIn 0.3s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Pontinhos animados */
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background-color: #555;
+  border-radius: 50%;
+  display: inline-block;
+  animation: blink 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Fade para frases suaves */
+.frase-suave {
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+  text-align: center;
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* Animações */
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -1631,6 +1691,74 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("predefined-questions").innerHTML = "";
     }
 
+// 🔄 Frases motivacionais enquanto aguarda a resposta do servidor
+const mensagensEspera = [
+  "🔧 A conexão está sendo iniciada...",
+  "📡 Consultando os nossos sistemas...",
+  "✨ Puxando sabedoria dos servidores da EXA…",
+  "🌱 Preparando uma resposta personalizada...",
+  "🔧 Montando as melhores palavras pra te responder…",
+  "🚀 Quase lá! Obrigado pela paciência..."
+];
+
+let indiceFrase = 0;
+let intervaloEspera = null;
+
+// Inicia a animação de espera no chat
+function iniciarAnimacaoEspera() {
+    pararAnimacaoEspera(); // Garante que não tenha uma duplicada
+
+    const chatMessages = document.getElementById("chat-box-messages");
+
+    const container = document.createElement("div");
+    container.className = "ExaBot-support-message waiting-message";
+    container.id = "mensagem-espera";
+
+    const typing = document.createElement("div");
+    typing.className = "typing-indicator";
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    container.appendChild(typing);
+
+    const frase = document.createElement("div");
+    frase.className = "frase-suave";
+    frase.style.display = "none";
+    container.appendChild(frase);
+
+    chatMessages.appendChild(container);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    indiceFrase = 0;
+
+    intervaloEspera = setInterval(() => {
+        frase.style.opacity = 0;
+        frase.style.display = "none";
+
+        typing.style.display = "flex"; // Mostra pontinhos
+        setTimeout(() => {
+            typing.style.display = "none";
+            frase.textContent = mensagensEspera[indiceFrase];
+            frase.style.display = "block";
+
+            setTimeout(() => {
+                frase.style.opacity = 1;
+            }, 50); // Delay para suavizar o fade
+        }, 3000); // Tempo que os pontinhos aparecem antes da frase
+
+        indiceFrase = (indiceFrase + 1) % mensagensEspera.length;
+    }, 7000); // Troca total a cada 7 segundos
+}
+
+
+// Para a animação de espera e remove do chat
+function pararAnimacaoEspera() {
+    clearInterval(intervaloEspera);
+    indiceFrase = 0;
+    
+    const mensagemEspera = document.getElementById("mensagem-espera");
+    if (mensagemEspera) {
+        mensagemEspera.remove();
+    }
+}
 
 /***************************************************************
  *       EXIBIR AS PERGUNTAS DINÂMICAS LOGO ABAIXO DA RESPOSTA
@@ -2614,6 +2742,7 @@ document.addEventListener('click', (event) => {
     if (!message) return;
 
     renderizarMensagem(message, "user"); // Exibe a mensagem do usuário
+    iniciarAnimacaoEspera(); // 👈 Inicia a animação de frases positivas
     chatInput.value = ''; // Limpa o campo de entrada
     responsePending = true;
     if (ttsEnabled) {
@@ -2621,12 +2750,6 @@ document.addEventListener('click', (event) => {
 } else {
     atualizarStatus('processando');
 }
-
-
-    const typingIndicator = document.createElement('div');
-    typingIndicator.className = 'typing-indicator';
-    typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-    chatMessages.appendChild(typingIndicator);
 
     try {
         const response = await fetch('https://chatbot-exa.onrender.com/chatbot', {
@@ -2639,15 +2762,20 @@ document.addEventListener('click', (event) => {
 
         const data = await response.json();
 
-        chatMessages.removeChild(typingIndicator); // Remove indicador de digitação
-        atualizarStatus('online');
+        pararAnimacaoEspera(); // ⬅️ Interrompe a animação de frases positivas
 
-        await renderizarTextoGradual(data.resposta);
 
-        setTimeout(() => {
-            console.log("🔹 Chamando gerarPerguntasBaseadasNaConversa() agora...");
-            gerarPerguntasBaseadasNaConversa(data.perguntasDinamicas);
-        }, 800);
+atualizarStatus('online'); // ⬅️ Já coloca o status de volta como online
+
+await new Promise(resolve => setTimeout(resolve, 500)); // Pequeno delay suave
+
+await renderizarTextoGradual(data.resposta); // ⬅️ Renderiza a resposta do bot normalmente
+
+setTimeout(() => {
+    console.log("🔹 Chamando gerarPerguntasBaseadasNaConversa() agora...");
+    gerarPerguntasBaseadasNaConversa(data.perguntasDinamicas);
+}, 800);
+
 
         if (!chatInput.value.trim()) {
             actionButton.textContent = "Limpar";
@@ -2657,6 +2785,7 @@ document.addEventListener('click', (event) => {
     } catch (error) {
         console.error('Erro ao processar mensagem:', error);
         chatMessages.removeChild(typingIndicator);
+        pararAnimacaoEspera(); // 👈 Interrompe a animação mesmo em caso de erro
         atualizarStatus('offline');
         renderizarMensagem('Houve um problema. Tente novamente mais tarde.', 'ExaBot');
     }
@@ -2889,22 +3018,15 @@ function digitarPerguntas() {
         });
 
         function simulateTypingWithBalloon(message) {
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'typing-indicator';
-            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-            chatMessages.appendChild(typingIndicator);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+    const botMessage = document.createElement('div');
+    botMessage.className = 'ExaBot-support-message';
+    botMessage.innerHTML = message;
 
-            setTimeout(() => {
-                chatMessages.removeChild(typingIndicator);
-
-                const botMessage = document.createElement('div');
-                botMessage.className = 'ExaBot-support-message';
-                botMessage.innerHTML = message;
-                chatMessages.appendChild(botMessage);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 2000);
-        }
+    setTimeout(() => {
+        chatMessages.appendChild(botMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 2000);
+}
 
            /***************************************************************
          *               MODIFICA O ATRASO DE ENTRADA CHATBOT/EXABOT
