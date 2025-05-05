@@ -18,7 +18,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "node-fetch": "^3.3.2",
-    "nodemailer": "^6.10.0",
+    "nodemailer": "^6.10.1",
     "quickchart-js": "^3.1.3"
   }
 }
