@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer/lib/nodemailer.js';
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
